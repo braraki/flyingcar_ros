@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="name" />
+  <arg name="frame" default="$(arg name)/base_link" />
+  <arg name="joy_dev" default="/dev/input/js0" />
+  <arg name="x" default="0" />
+  <arg name="y" default="0" />
+  <arg name="z" default="0.5" />
+
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
+
+  <group ns="$(arg name)">
+    <include file="$(find crazyflie_driver)/launch/crazyflie_add.launch">
+      <arg name="name" value="$(arg name)" />
+    </include>
+
+    <node name="joy" pkg="joy" type="joy_node" output="screen">
+      <param name="dev" value="$(arg joy_dev)" />
+    </node>
+
+    <node name="joystick_controller" pkg="crazyflie_teleop" type="controller.py" output="screen"> <!-- NTS this should be one controller (wheels) -->
+      <param name="use_crazyflie_controller" value="True" />
+    </node>
+
+    <include file="$(find crazyflie_controller)/launch/crazyflie2.launch">
+      <arg name="frame" value="$(arg frame)" />
+    </include>
+
+    <node name="pose" pkg="crazyflie_demo" type="publish_pose.py" output="screen">
+      <param name="name" value="goal" />
+      <param name="rate" value="30" />
+      <param name="x" value="$(arg x)" />
+      <param name="y" value="$(arg y)" />
+      <param name="z" value="$(arg z)" />
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="baselink_broadcaster" args="0 0 0 0 0 0 1 $(arg frame) /Robot_1/pose 100" />
+  </group> <!--Isn't messing anything up rn, but should maybe edit/remove this line NTS -->
+
+  <!-- run optitrack bridge -->
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+  <!-- run rviz -->
+  <param name="robot_description" command="$(find xacro)/xacro.py $(find crazyflie_description)/urdf/crazyflie.urdf.xacro" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find crazyflie_demo)/launch/crazyflie_pos.rviz" required="true" /> <!--- NTS, can maybe change true to false, RVIZ not strictly neccesary? Just visualization -->
+
+</launch>

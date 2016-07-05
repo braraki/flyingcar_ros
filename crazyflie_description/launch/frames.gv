@@ -1,0 +1,7 @@
+digraph G {
+"world" -> "Robot_1/base_link"[label="Broadcaster: /mocap_node\nAverage rate: 120.209 Hz\nMost recent transform: 1466800974.706 ( 0.008 sec old)\nBuffer length: 4.975 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1466800974.714"[ shape=plaintext ] ;
+ }->"world";
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="name" />
+  <arg name="joy_dev" default="/dev/input/js0" />
+
+
+  <node name="joy" pkg="joy" type="joy_node" output="screen" >
+    <param name="dev" value="$(arg joy_dev)" />
+  </node>
+  
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
+
+  <group ns="$(arg name)" >
+	  <include file="$(find crazyflie_driver)/launch/crazyflie_add.launch">
+	    <arg name="name" value="$(arg name)" />
+	  </include>
+
+	  <include file="$(find crazyflie_teleop)/launch/ps3.launch">
+	  </include>
+
+	  <node name="crazyflie_demo_controller" pkg="crazyflie_teleop" type="controller.py" output="screen">
+	  </node>
+   </group>
+
+   <param name="/cf_list/$(arg name)" type="boolean" value="True"/> <!-- should make this param go away when the crazyflie stops being connected NTS --> 
+
+  <!--<include file="$(find crazyflie_wheels)/launch/crazyflie_add_with_ctrl.launch"> 
+  	<arg name="name" value="$(arg name)" />
+  </include>--> 												<!--Lines in group above ostensibly replace this launch file NTS -->
+
+  <node name="cf_selector" pkg="crazyflie_teleop" type="cf_selector.py">
+  </node>
+  
+</launch>
+
+

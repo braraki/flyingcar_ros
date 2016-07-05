@@ -1,0 +1,4 @@
+uri: radio://0/80/250K/0xE7E7E7E7D4
+roll_trim: 4.0
+pitch_trim: 6.0
+tf_prefix: "igo"
