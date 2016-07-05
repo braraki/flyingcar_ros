@@ -23,6 +23,7 @@ class Converter():
 		msg.pose = pose
 		pose_converted = rospy.Publisher("/igo/pose",PoseWithCovarianceStamped,queue_size=10)
 		pose_converted.publish(msg)
+		#NTS update to any flie, instead of just igo
 
 	def _push_new_pose(self,data):
 		pose_new = rospy.Publisher("/pose_new",PoseStamped,queue_size=10)

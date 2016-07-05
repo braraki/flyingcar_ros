@@ -1,7 +1,7 @@
 <!-- Launch file for ekf_localization_node -->
 
 <launch>
-    <arg name="name" default=""/>
+    <arg name="name" />
 
     <!-- This node will take in measurements from odometry, IMU, stamped pose, and stamped twist messages. It tracks
          the state of the robot, with the state vector being defined as X position, Y position, Z position,
