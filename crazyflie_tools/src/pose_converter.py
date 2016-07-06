@@ -10,10 +10,11 @@ import sys
 
 class Converter():
 
-	def __init__(self):		
-		pose_topic = rospy.Subscriber("/Robot_1/pose",PoseStamped,self._push_pose)
-		back_to_pose = rospy.Subscriber("/odometry/filtered",Odometry,self._push_new_pose)
+	def __init__(self):
 		self.name=sys.argv[1]
+		self.number=sys.argv[2]			
+		pose_topic = rospy.Subscriber("/Robot_"+self.number+"/pose",PoseStamped,self._push_pose)
+		back_to_pose = rospy.Subscriber("/odometry/filtered",Odometry,self._push_new_pose)
 
 	def _push_pose(self,data):
 		msg = PoseWithCovarianceStamped()

@@ -121,6 +121,9 @@
            if the node is unhappy with any settings or data. -->
       <param name="print_diagnostics" value="true"/>
 
+      <!--<remap from="odometry/filtered" to="$(arg name)/odometry/filtered"/>-->
+
+
     </node>
 
 </launch>
