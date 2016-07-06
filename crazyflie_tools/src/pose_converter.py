@@ -5,6 +5,7 @@ from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import PoseWithCovariance
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
+import sys
 
 
 class Converter():
@@ -12,7 +13,7 @@ class Converter():
 	def __init__(self):		
 		pose_topic = rospy.Subscriber("/Robot_1/pose",PoseStamped,self._push_pose)
 		back_to_pose = rospy.Subscriber("/odometry/filtered",Odometry,self._push_new_pose)
-
+		self.name=sys.argv[1]
 
 	def _push_pose(self,data):
 		msg = PoseWithCovarianceStamped()
@@ -21,7 +22,7 @@ class Converter():
 		pose.pose = data.pose
 		pose.covariance = [0] * 36
 		msg.pose = pose
-		pose_converted = rospy.Publisher("/igo/pose",PoseWithCovarianceStamped,queue_size=10)
+		pose_converted = rospy.Publisher("/"+self.name+"/pose",PoseWithCovarianceStamped,queue_size=10)
 		pose_converted.publish(msg)
 		#NTS update to any flie, instead of just igo
 
