@@ -16,9 +16,9 @@ def joyChanged(data):
 if __name__ == '__main__':
     rospy.init_node('publish_pose', anonymous=True)
     worldFrame = rospy.get_param("~worldFrame", "/world")
-    name = rospy.get_param("~name")
+    name = rospy.get_param("~name") #NTS replaced below with relative topic name, should resolve properly
     r = rospy.get_param("~rate")
-    joy_topic = rospy.get_param("~joy_topic", "joy")
+    joy_topic = rospy.get_param("~joy_topic", "joy") #NTS replaced below with relative topic name
     x = rospy.get_param("~x")
     y = rospy.get_param("~y")
     z = rospy.get_param("~z")
@@ -39,8 +39,8 @@ if __name__ == '__main__':
     msg.pose.orientation.z = quaternion[2]
     msg.pose.orientation.w = quaternion[3]
 
-    pub = rospy.Publisher(name, PoseStamped, queue_size=1)
-    rospy.Subscriber(joy_topic, Joy, joyChanged)
+    pub = rospy.Publisher("goal", PoseStamped, queue_size=1)
+    rospy.Subscriber("joy", Joy, joyChanged)
 
     while not rospy.is_shutdown():
         global lastData

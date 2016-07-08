@@ -14,7 +14,7 @@ class Converter():
 		self.name=sys.argv[1]
 		self.number=sys.argv[2]			
 		pose_topic = rospy.Subscriber("/Robot_"+self.number+"/pose",PoseStamped,self._push_pose)
-		back_to_pose = rospy.Subscriber("/odometry/filtered",Odometry,self._push_new_pose)
+		back_to_pose = rospy.Subscriber("odometry/filtered",Odometry,self._push_new_pose)
 
 	def _push_pose(self,data):
 		msg = PoseWithCovarianceStamped()
@@ -23,8 +23,8 @@ class Converter():
 		pose.pose = data.pose
 		pose.covariance = [0] * 36
 		msg.pose = pose
-		pose_converted = rospy.Publisher("/"+self.name+"/pose",PoseWithCovarianceStamped,queue_size=10)
-		pose_converted.publish(msg)
+		pose_converted = rospy.Publisher("/"+self.name+"/pose",PoseWithCovarianceStamped,queue_size=10) #NTS this could be better resolved through use of namespaces
+		pose_converted.publish(msg) 
 		#NTS update to any flie, instead of just igo
 
 	def _push_new_pose(self,data):
