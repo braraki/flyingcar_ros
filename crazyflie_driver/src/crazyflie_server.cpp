@@ -276,8 +276,8 @@ private:
             {"mag", "x"},
             {"mag", "y"},
             {"mag", "z"},
-            {"baro", "temp"},
-            {"baro", "pressure"},
+            {"stabilizer", "yaw"},
+            {"stabilizer", "pitch"},
             {"pm", "vbat"},
           }, cb2));
         logBlock2->start(10); // 100ms
@@ -359,8 +359,8 @@ private:
   }
 
   void onLog2Data(uint32_t time_in_ms, log2* data) {
-
     if (m_enable_logging_temperature) {
+
       sensor_msgs::Temperature msg;
       if (m_use_ros_time) {
         msg.header.stamp = ros::Time::now();
@@ -398,7 +398,6 @@ private:
 
     if (m_enable_logging_battery) {
       std_msgs::Float32 msg;
-      // V
       msg.data = data->pm_vbat;
       m_pubBattery.publish(msg);
     }

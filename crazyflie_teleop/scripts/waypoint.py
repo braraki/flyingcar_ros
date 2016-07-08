@@ -8,6 +8,8 @@ from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import PoseWithCovarianceStamped
 import sys 
 import os
+import threading
+
 
 '''
 four modes:
@@ -20,35 +22,50 @@ four modes:
 #needs to publish to goal
 #needs to subscribe to current position.
 
-class WaypointCtrl:
+class WaypointNode:
 
 	def __init__(self, flight_mode=1, path_file=None):
+		rospy.init_node("waypoint_nav")
 
 		self.flight_mode = flight_mode
+		self.path_file = path_file
+
 		self.flight_path = []
 
-		self.path_file = path_file
+		self.repeat = True #should be settable
+
+		#Checks if flight path file exists for modes (1,2,3)
 		if flight_mode != 4 and self.path_file == None:
-			print "Unacceptable flight path file!"
+			print "No flight path file!"
 			quit()
 
+		#-----------------------------------
+
+		#Vars for determining whether CF has reached its goal
 		self.x = 0
 		self.y = 0
 		self.z = 0
-
-		self.last_update_time = 0
 
 		self.dx = 0
 		self.dy = 0
 		self.dz = 0
 
+		self.prev_update_time = 1
+
+		self.pos_error_margin = 0.05 #errors between goal and current position/velocity for "good enough" position reaching
+		self.vel_error_margin = 0.005
+
+		#-----------------------------------
+
+		#CF's Current goal
 		self.goal_x = 0
 		self.goal_y = 0 
 		self.goal_z = 0
 		self.goal_pause = 0
 
-		self.repeat = True #should be settable
+		#-----------------------------------
 
+		#defines goal message
 		self.msg = PoseStamped()
 		self.msg.header.seq = 0
 		self.msg.header.stamp = rospy.Time.now()
@@ -63,16 +80,20 @@ class WaypointCtrl:
 		self.msg.pose.orientation.z = quaternion[2]
 		self.msg.pose.orientation.w = quaternion[3] #NTS should make yaw settable from the flight path (optionally?)
 
-		self.prev_update_time = 1
+		#-----------------------------------
 
-		self.pos_error_margin = 0.05
-		self.vel_error_margin = 0.005
 
-		rospy.Subscriber("/kal/pose",PoseWithCovarianceStamped, self._position_updated)	
+		rospy.Subscriber("/kal/pose",PoseWithCovarianceStamped, self._position_updated)	 #NTS fix namespace once node can run from launch file
 		self. goal_pub = rospy.Publisher("/kal/goal",PoseStamped, queue_size=1)
 
 		if self.flight_mode != 4:
 			self._get_flight_path(self.path_file)
+
+		pub_thread = threading.Thread(target=self._publish_goal)
+		flight_thread = threading.Thread(target=self.auto_flight)
+
+		pub_thread.start()
+		flight_thread.start()
 
 
 	def _position_updated(self,data): #gonna wanna adjust for decimal places?
@@ -109,6 +130,7 @@ class WaypointCtrl:
 			print "Incorrectly formatted path file! Incorrect number of args!"
 			quit()
 		f.close()
+		print "Got Flight Path!"
 
 	def _change_goal(self):
 		if len(self.flight_path) > 0:
@@ -124,29 +146,37 @@ class WaypointCtrl:
 			else:
 				#land and shutdown? Signal landing
 				print "finished!"
+		print "Updated Goal!"
 		self._publish_goal()
 		
 	def _publish_goal(self):
-		print self.dx, self.dy, self.dz
-		self.msg.header.stamp = rospy.Time.now()
-		self.msg.pose.position.x = self.goal_x
-		self.msg.pose.position.y = self.goal_y
-		self.msg.pose.position.z = self.goal_z
-		self.goal_pub.publish(self.msg)
+		while not rospy.is_shutdown():
+			#print self.dx, self.dy, self.dz
+			self.msg.header.stamp = rospy.Time.now()
+			self.msg.pose.position.x = self.goal_x
+			self.msg.pose.position.y = self.goal_y
+			self.msg.pose.position.z = self.goal_z
+			self.goal_pub.publish(self.msg)
+			#print "Published Goal!"
+			rospy.Rate(30).sleep()
 
 	def auto_flight(self):
-		print "current goal: ", self.goal_x,self.goal_y, self.goal_z
-		if self.flight_mode == 1:
-			raw_input()
-			self._change_goal()
-		if self._check_goal() == True:
-			if self.flight_mode == 2:
+		while not rospy.is_shutdown():
+			#print "current goal: ", self.goal_x,self.goal_y, self.goal_z
+			if self.flight_mode == 1:
+				raw_input()
 				self._change_goal()
-			elif self.flight_mode == 3:
-				rospy.sleep(float(self.goal_pause))
-				self._change_goal()
+			if self._check_goal() == True:
+				print "At goal!"
+				if self.flight_mode == 2:
+					self._change_goal()
+				elif self.flight_mode == 3:
+					rospy.sleep(float(self.goal_pause))
+					self._change_goal()
+			rospy.Rate(30).sleep()
 
 	def _check_goal(self):
+		print self.goal_x, self.goal_y, self.goal_z
 		if (abs(self.x - self.goal_x) < self.pos_error_margin and abs(self.y - self.goal_y) < self.pos_error_margin 
 		  		and abs(self.z - self.goal_z) < self.pos_error_margin and abs(self.dx) < self.vel_error_margin 
 		  		and abs(self.dy) < self.vel_error_margin and abs(self.dz) < self.vel_error_margin):
@@ -155,18 +185,18 @@ class WaypointCtrl:
 			return False
 
 if __name__ == '__main__':
-	rospy.init_node("waypoint_nav")
 
-	rate = rospy.Rate(rospy.get_param("/kal/pose/rate")) #NTS this should be reset to ~/pose/rate once node is running in correct NS
+	#rate = rospy.Rate(rospy.get_param("/kal/pose/rate")) #NTS this should be reset to ~/pose/rate once node is running in correct NS
 
 	flight_mode = int(sys.argv[1])
 	flight_path = sys.argv[2]
 
-	print flight_mode, flight_path
+	#print flight_mode, flight_path
 
-	waypointer = WaypointCtrl(flight_mode,flight_path)
+	waypointer = WaypointNode(flight_mode,flight_path)
 
-	while not rospy.is_shutdown():
-		waypointer.auto_flight()
-		waypointer._publish_goal()
-		rate.sleep()
+	#pub = threading.Thread(target=waypointer._publish_goal)
+	#flight = threading.Thread(target=waypointer.auto_flight)
+	#while not rospy.is_shutdown():
+		
+	#	rate.sleep()
