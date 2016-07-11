@@ -422,7 +422,6 @@ const Crazyflie::LogTocEntry* Crazyflie::getLogTocEntry(
 {
   for (auto&& entry : m_logTocEntries) {
     if (entry.group == group && entry.name == name) {
-      std::cout << group << " " << name << ";" << &entry << "\n";
       return &entry;
     }
   }

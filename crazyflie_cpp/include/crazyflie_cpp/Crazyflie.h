@@ -301,6 +301,7 @@ public:
 private:
   void handleData(crtpLogDataResponse* response, uint8_t size) {
     //std::cout << unsigned(size) << ";" << sizeof(T) << "\n";
+
     if (size == sizeof(T)) {
       uint32_t time_in_ms = ((uint32_t)response->timestampHi << 8) | (response->timestampLo);
       T* t = (T*)response->data;
