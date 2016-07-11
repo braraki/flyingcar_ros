@@ -50,10 +50,10 @@ class WaypointNode:
 		self.dy = 0
 		self.dz = 0
 
-		self.prev_update_time = 1
+		self.prev_update_time = 0
 
-		self.pos_error_margin = 0.05 #errors between goal and current position/velocity for "good enough" position reaching
-		self.vel_error_margin = 0.005
+		self.pos_error_margin = 0.2 #errors between goal and current position/velocity for "good enough" position reaching
+		self.vel_error_margin = 0.5
 
 		#-----------------------------------
 
@@ -83,20 +83,27 @@ class WaypointNode:
 		#-----------------------------------
 
 
-		rospy.Subscriber("/kal/pose",PoseWithCovarianceStamped, self._position_updated)	 #NTS fix namespace once node can run from launch file
-		self. goal_pub = rospy.Publisher("/kal/goal",PoseStamped, queue_size=1)
+		self. goal_pub = rospy.Publisher("/igo/goal",PoseStamped, queue_size=1)
 
 		if self.flight_mode != 4:
 			self._get_flight_path(self.path_file)
 
 		pub_thread = threading.Thread(target=self._publish_goal)
+		sub_thread = threading.Thread(target=self._listen_to_pos)
 		flight_thread = threading.Thread(target=self.auto_flight)
 
+		sub_thread.start()
 		pub_thread.start()
 		flight_thread.start()
 
 
+	def _listen_to_pos(self):
+		#while not rospy.is_shutdown():
+		rospy.Subscriber("/igo/pose",PoseWithCovarianceStamped, self._position_updated)	 #NTS fix namespace once node can run from launch file
+
+
 	def _position_updated(self,data): #gonna wanna adjust for decimal places?
+		print "position updated!"
 		prev_x = self.x
 		prev_y = self.y
 		prev_z = self.z
@@ -106,13 +113,14 @@ class WaypointNode:
 		self.z = data.pose.pose.position.z
 
 		update_time = data.header.stamp.nsecs
-
+		#rint update_time
 		#print self.prev_update_time
 
 		self.dx = (self.x-prev_x)/(update_time-self.prev_update_time)
 		self.dy = (self.y-prev_y)/(update_time-self.prev_update_time)
 		self.dz = (self.z-prev_z)/(update_time-self.prev_update_time)
 		#print "updated at ", update_time
+		#print self.dx,self.dy,self.dz
 
 		self.prev_update_time = update_time
 
@@ -147,7 +155,7 @@ class WaypointNode:
 				#land and shutdown? Signal landing
 				print "finished!"
 		print "Updated Goal!"
-		self._publish_goal()
+		#self._publish_goal()
 		
 	def _publish_goal(self):
 		while not rospy.is_shutdown():
@@ -161,6 +169,7 @@ class WaypointNode:
 			rospy.Rate(30).sleep()
 
 	def auto_flight(self):
+		#print self.dx,self.dy,self.dz
 		while not rospy.is_shutdown():
 			#print "current goal: ", self.goal_x,self.goal_y, self.goal_z
 			if self.flight_mode == 1:
@@ -176,7 +185,7 @@ class WaypointNode:
 			rospy.Rate(30).sleep()
 
 	def _check_goal(self):
-		print self.goal_x, self.goal_y, self.goal_z
+		#print self.goal_x, self.goal_y, self.goal_z
 		if (abs(self.x - self.goal_x) < self.pos_error_margin and abs(self.y - self.goal_y) < self.pos_error_margin 
 		  		and abs(self.z - self.goal_z) < self.pos_error_margin and abs(self.dx) < self.vel_error_margin 
 		  		and abs(self.dy) < self.vel_error_margin and abs(self.dz) < self.vel_error_margin):
