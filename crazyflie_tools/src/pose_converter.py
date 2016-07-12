@@ -28,7 +28,7 @@ class Converter():
 		#NTS update to any flie, instead of just igo
 
 	def _push_new_pose(self,data):
-		pose_new = rospy.Publisher("/pose_new",PoseStamped,queue_size=10)
+		pose_new = rospy.Publisher("/"+self.name+"/pose_new",PoseStamped,queue_size=10)
 		msg = PoseStamped()
 		msg.header = data.header
 		msg.pose = data.pose.pose
