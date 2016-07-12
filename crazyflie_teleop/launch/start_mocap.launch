@@ -7,6 +7,7 @@
   <arg name="x" default="0" />
   <arg name="y" default="0" />
   <arg name="z" default="0.5" />
+  <arg name="path_name" />
 
   <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
   </include>
@@ -14,6 +15,7 @@
  <include file="$(find crazyflie_teleop)/launch/hover_mocap.launch">
  	<arg name="name" value="$(arg name)" />
  	<arg name="number" value="$(arg number)" />
+  <arg name="path_name" value="$(arg path_name)" />
   	<arg name="frame" value="$(arg frame)" />
   	<arg name="joy_dev" value="$(arg joy_dev)" />
   	<arg name="x" value="$(arg x)" />
