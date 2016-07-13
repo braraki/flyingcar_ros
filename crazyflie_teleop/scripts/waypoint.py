@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
-#NEED TO ADD SUPPORT FOR MODE 4
+#NTS NEED TO ADD SUPPORT FOR MODE 4
 
 import rospy
 import tf
+
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import PoseWithCovarianceStamped
+from std_srvs.srv import Empty
+
 import sys 
 import os
 import threading
-
 
 '''
 four modes:
@@ -17,22 +19,28 @@ four modes:
 (1) Go to next position when usr clicks/presses button
 (2) Go to next position as soon as stabilized at last position
 (3) Go to next position after t seconds of stabilization at last position
-(4) direct input
+(4) direct input [TO BE IMPLEMENTED]
 '''
-#needs to publish to goal
-#needs to subscribe to current position.
+
 
 class WaypointNode:
 
 	def __init__(self, flight_mode=1, path_file=None):
 		rospy.init_node("waypoint_nav")
 
+		# gets langing service
+		rospy.loginfo("waiting for land service")
+		rospy.wait_for_service('land')
+		rospy.loginfo("found land service")
+		self._land = rospy.ServiceProxy('land', Empty)
+
+
 		self.flight_mode = flight_mode
 		self.path_file = path_file
 
 		self.flight_path = []
 
-		self.repeat = True #should be settable
+		self.repeat = False #NTS should be user-settable
 
 		#Checks if flight path file exists for modes (1,2,3)
 		if flight_mode != 4 and self.path_file == None:
@@ -52,8 +60,8 @@ class WaypointNode:
 
 		self.prev_update_time = 0
 
-		self.pos_error_margin = 0.2 #errors between goal and current position/velocity for "good enough" position reaching
-		self.vel_error_margin = 0.5
+		self.pos_error_margin = 0.14 #errors between goal and current position/velocity for "good enough" position reaching
+		self.vel_error_margin = 0.005
 
 		#-----------------------------------
 
@@ -83,7 +91,7 @@ class WaypointNode:
 		#-----------------------------------
 
 
-		self. goal_pub = rospy.Publisher("/igo/goal",PoseStamped, queue_size=1)
+		self. goal_pub = rospy.Publisher("goal",PoseStamped, queue_size=1)
 
 		if self.flight_mode != 4:
 			self._get_flight_path(self.path_file)
@@ -92,18 +100,21 @@ class WaypointNode:
 		sub_thread = threading.Thread(target=self._listen_to_pos)
 		flight_thread = threading.Thread(target=self.auto_flight)
 
+		sub_thread.daemon = True
+		flight_thread.daemon = True
+		pub_thread.daemon = True
+
 		sub_thread.start()
 		pub_thread.start()
 		flight_thread.start()
 
 
 	def _listen_to_pos(self):
-		#while not rospy.is_shutdown():
-		rospy.Subscriber("/igo/pose",PoseWithCovarianceStamped, self._position_updated)	 #NTS fix namespace once node can run from launch file
-
+		rospy.Subscriber("pose",PoseWithCovarianceStamped, self._position_updated)
+		return
 
 	def _position_updated(self,data): #gonna wanna adjust for decimal places?
-		print "position updated!"
+		#print "position updated!"
 		prev_x = self.x
 		prev_y = self.y
 		prev_z = self.z
@@ -113,8 +124,6 @@ class WaypointNode:
 		self.z = data.pose.pose.position.z
 
 		update_time = data.header.stamp.nsecs
-		#rint update_time
-		#print self.prev_update_time
 
 		self.dx = (self.x-prev_x)/(update_time-self.prev_update_time)
 		self.dy = (self.y-prev_y)/(update_time-self.prev_update_time)
@@ -124,8 +133,7 @@ class WaypointNode:
 
 		self.prev_update_time = update_time
 
-
-	def _get_flight_path(self, path_file):
+	def _get_flight_path(self, path_file): #file format should be x pos,y pos,z pos(,wait time). New line for each waypoint. 
 		f = open(path_file,'r')
 		for line in f:
 			point = line.strip().split(',')
@@ -148,18 +156,17 @@ class WaypointNode:
 			self.goal_z = new_goal[2]
 			if len(new_goal) > 3:
 				self.goal_pause = new_goal[3]
-		else:
+		else: #Reloads flight file if repeat is True, else lands. 
 			if self.repeat == True:
 				self._get_flight_path(self.path_file)
 			else:
-				#land and shutdown? Signal landing
+				self._land()
 				print "finished!"
+				return
 		print "Updated Goal!"
-		#self._publish_goal()
 		
 	def _publish_goal(self):
 		while not rospy.is_shutdown():
-			#print self.dx, self.dy, self.dz
 			self.msg.header.stamp = rospy.Time.now()
 			self.msg.pose.position.x = self.goal_x
 			self.msg.pose.position.y = self.goal_y
@@ -167,9 +174,9 @@ class WaypointNode:
 			self.goal_pub.publish(self.msg)
 			#print "Published Goal!"
 			rospy.Rate(30).sleep()
+		return
 
 	def auto_flight(self):
-		#print self.dx,self.dy,self.dz
 		while not rospy.is_shutdown():
 			#print "current goal: ", self.goal_x,self.goal_y, self.goal_z
 			if self.flight_mode == 1:
@@ -182,7 +189,8 @@ class WaypointNode:
 				elif self.flight_mode == 3:
 					rospy.sleep(float(self.goal_pause))
 					self._change_goal()
-			rospy.Rate(30).sleep()
+			rospy.Rate(30).sleep() #NTS are these rates set somewhere/ Check!
+		return
 
 	def _check_goal(self):
 		#print self.goal_x, self.goal_y, self.goal_z
@@ -195,17 +203,12 @@ class WaypointNode:
 
 if __name__ == '__main__':
 
-	#rate = rospy.Rate(rospy.get_param("/kal/pose/rate")) #NTS this should be reset to ~/pose/rate once node is running in correct NS
-
-	flight_mode = int(sys.argv[1])
+	flight_mode = int(sys.argv[1]) #grabs sys args for mode and flight path
 	flight_path = sys.argv[2]
 
 	#print flight_mode, flight_path
 
 	waypointer = WaypointNode(flight_mode,flight_path)
 
-	#pub = threading.Thread(target=waypointer._publish_goal)
-	#flight = threading.Thread(target=waypointer.auto_flight)
-	#while not rospy.is_shutdown():
-		
-	#	rate.sleep()
+	while not rospy.is_shutdown():
+		rospy.spin()
