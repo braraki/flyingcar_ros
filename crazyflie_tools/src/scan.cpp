@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 {
 
   std::string addressStr;
-  std::string defaultAddressStr("0xE7E7E7E7E7");
+  std::string defaultAddressStr("0xE7E7E7E7E&");
 
   namespace po = boost::program_options;
 

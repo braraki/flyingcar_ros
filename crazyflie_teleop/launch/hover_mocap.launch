@@ -9,6 +9,9 @@
   <arg name="z" default="0.5" />
   <arg name="path_name" />
 
+  <node name="make_rviz" pkg="crazyflie_teleop" type="make_rviz.sh" args="$(arg name)">
+  </node>
+
   <group ns="$(arg name)">
 
 	<node name="pose_converter" type="pose_converter.py" pkg="crazyflie_tools" args="$(arg name) $(arg number)">
@@ -43,6 +46,9 @@
       <param name="x" value="$(arg x)" />
       <param name="y" value="$(arg y)" />
       <param name="z" value="$(arg z)" />
+    </node>
+
+    <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" >
     </node>
 
     <node pkg="tf" type="static_transform_publisher" name="baselink_broadcaster" args="0 0 0 0 0 0 1 $(arg frame) /Robot_$(arg number)/pose 100" /><!--Isn't messing anything up rn, but should maybe edit/remove this line NTS -->
