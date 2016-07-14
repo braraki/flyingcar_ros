@@ -40,7 +40,7 @@ class WaypointNode:
 
 		self.flight_path = []
 
-		self.repeat = False #NTS should be user-settable
+		self.repeat = True #NTS should be user-settable
 
 		#Checks if flight path file exists for modes (1,2,3)
 		if flight_mode != 4 and self.path_file == None:
