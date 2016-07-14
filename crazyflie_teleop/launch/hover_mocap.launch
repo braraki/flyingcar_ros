@@ -35,20 +35,15 @@
       <arg name="frame" value="$(arg frame)" />
     </include>
 
-<<<<<<< HEAD
-=======
-    <node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="2 $(find crazyflie_teleop)/paths/$(arg path_name)">
-    </node>
-    <!--<node name="pose" pkg="crazyflie_teleop" type="publish_pose_teleop.py" output="screen">
->>>>>>> bf398f47991e407b7ad02a00ce7f3f2b603e50f9
+    <!--<node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="2 $(find crazyflie_teleop)/paths/$(arg path_name)">
+    </node>-->
+    <node name="pose" pkg="crazyflie_teleop" type="publish_pose_teleop.py" output="screen">
       <param name="name" value="goal" />
       <param name="rate" value="30" />
       <param name="x" value="$(arg x)" />
       <param name="y" value="$(arg y)" />
       <param name="z" value="$(arg z)" />
-<<<<<<< HEAD
-    </node>-->
->>>>>>> bf398f47991e407b7ad02a00ce7f3f2b603e50f9
+    </node>
 
     <node pkg="tf" type="static_transform_publisher" name="baselink_broadcaster" args="0 0 0 0 0 0 1 $(arg frame) /Robot_$(arg number)/pose 100" /><!--Isn't messing anything up rn, but should maybe edit/remove this line NTS -->
   </group> 
