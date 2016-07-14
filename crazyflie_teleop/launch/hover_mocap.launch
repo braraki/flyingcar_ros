@@ -38,15 +38,20 @@
       <arg name="frame" value="$(arg frame)" />
     </include>
 
+<<<<<<< HEAD
+=======
     <node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="2 $(find crazyflie_teleop)/paths/$(arg path_name)">
     </node>
     <!--<node name="pose" pkg="crazyflie_teleop" type="publish_pose_teleop.py" output="screen">
+>>>>>>> bf398f47991e407b7ad02a00ce7f3f2b603e50f9
       <param name="name" value="goal" />
       <param name="rate" value="30" />
       <param name="x" value="$(arg x)" />
       <param name="y" value="$(arg y)" />
       <param name="z" value="$(arg z)" />
+<<<<<<< HEAD
     </node>-->
+>>>>>>> bf398f47991e407b7ad02a00ce7f3f2b603e50f9
 
     <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" >
     </node>
