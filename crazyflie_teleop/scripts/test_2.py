@@ -47,7 +47,6 @@ class test_drive():
 			if self.pwm > 255:
 				self.pwm = 0
 		except rospy.ServiceException as exc:
-			# rospy.wait_for_service('update_params')
 			print("Service did not process request: " + str(exc))
 			self.pwm = 0
 

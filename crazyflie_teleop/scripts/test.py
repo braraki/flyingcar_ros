@@ -16,8 +16,8 @@ class test_drive():
 		self.goal_theta = 0
 		
 		# rospy.Subscriber("/Robot_1/ground_pose", Pose2D, self.callback)
-		# rospy.Subscriber("goal_point", Pose2D, self.update_goal)
-		rospy.Subscriber("/Robot_1/ground_pose", Pose2D, self.update_pos)
+		rospy.Subscriber("goal_point", Pose2D, self.update_goal)
+		# rospy.Subscriber("/Robot_1/ground_pose", Pose2D, self.update_pos)
 
 	def callback(self, data):
 		self.x = data.x
@@ -53,9 +53,9 @@ class test_drive():
 		rospy.loginfo("goal_y is %s", self.goal_y)
 		rospy.loginfo("goal_theta is %s", self.goal_theta)
 
-		rospy.set_param('wheels/state', 1)
-		rospy.set_param('wheels/pwm_1', 150) # implement PID control
-		rospy.set_param('wheels/pwm_2', 150)
+		# rospy.set_param('wheels/state', 1)
+		# rospy.set_param('wheels/pwm_1', 150) # implement PID control
+		# rospy.set_param('wheels/pwm_2', 150)
 
 	def print_info(self, data):
 		rospy.loginfo("goal_x is %s", self.goal_x)
