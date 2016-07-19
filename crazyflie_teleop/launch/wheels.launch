@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="name" default="eff"/>
+  <arg name="number" default="1" />
+  <arg name="frame" default="$(arg name)/base_link" />
+  <arg name="joy_dev" default="/dev/input/js0" />
+  <arg name="x" default="0" />
+  <arg name="y" default="0" />
+  <arg name="z" default="0" />
+  <arg name="path_name" default="bleh"/>
+
+
+  <remap from="/Robot_1/ground_pose" to="/eff/Robot_1/ground_pose"/>
+
+
+  <!-- run optitrack -->
+  <include file="$(find mocap_optitrack)/launch/mocap.launch">
+  </include>
+
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
+
+  <group ns="$(arg name)" >
+    <include file="$(find crazyflie_driver)/launch/crazyflie_add.launch">
+      <arg name="name" value="$(arg name)" />
+    </include>
+    <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen"/>
+
+  </group>
+
+
+  <!-- run rviz -->
+  <param name="robot_description" command="$(find xacro)/xacro.py $(find crazyflie_description)/urdf/crazyflie.urdf.xacro" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find crazyflie_teleop)/launch/crazyflie_pos.rviz" required="true" /> <!--- NTS, can maybe change true to false, RVIZ not strictly neccesary? Just visualization -->
+
+  <param name="/cf_list/$(arg name)" type="boolean" value="True"/> 
+
+  <node name="wheel_command" pkg="crazyflie_teleop" type="wheel_command.py" output="screen"/>
+
+  <node name="cf_selector" pkg="crazyflie_teleop" type="cf_selector.py">
+  </node>
+  
+</launch>
