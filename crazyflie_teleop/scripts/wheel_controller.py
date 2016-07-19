@@ -21,6 +21,7 @@ class wheel_controller:
 		self.x = 0
 		self.y = 0
 		self.theta = 0
+		#self.prev_state = 0
 
 		self.goal_x = 0
 		self.goal_y = 0
@@ -29,23 +30,36 @@ class wheel_controller:
 
 		# margin of error
 		self.pos_error = 0.05
-		self.theta_error = 0.1
 
-		rospy.Subscriber("goal_point", Pose2D, self.update_goal)
-		rospy.Subscriber("Robot_1/ground_pose", Pose2D, self.wheel_command)
+		rospy.Subscriber("/goal_point", Pose2D, self.update_goal)
+		rospy.Subscriber("/Robot_1/ground_pose", Pose2D, self.wheel_command)
 
 	def update_goal(self, data):
 		self.goal_x = data.x
 		self.goal_y = data.y
+		#self.prev_state = rospy.get_param('wheels/state')
 
 		if self.check_goal():
 			rospy.set_param('wheels/state', 0)
+			# if self.prev_state != 0:
+			# 	rospy.set_param('wheels/state', 0)
+			# 	try:
+			# 		self._update_params(["wheels/state"])
+			# 	except rospy.ServiceException as exc:
+			# 		print("Service did not process request: " + str(exc))
+
 		else:
-			self.offset = int(self.offset)
-			print self.offset
 			rospy.set_param('wheels/state', 1)
-			rospy.set_param('wheels/pwm_1', 80 - self.offset)
-			rospy.set_param('wheels/pwm_2', 80 + self.offset)
+			# if self.prev_state != 1:
+			# 	rospy.set_param('wheels/state', 1)
+			# 	try:
+			# 		self._update_params(["wheels/state"])
+			# 	except rospy.ServiceException as exc:
+			# 		print("Service did not process request: " + str(exc))
+			self.offset = int(self.offset)
+			#print self.offset
+			rospy.set_param('wheels/pwm_1', 100 - self.offset)
+			rospy.set_param('wheels/pwm_2', 100 + self.offset)
 
 		try:
 			self._update_params(["wheels/state"])
@@ -71,6 +85,8 @@ class wheel_controller:
 		self.y = data.y
 		self.theta = data.theta
 
+		offset_constant = 1.0
+
 		x_e = self.goal_x - self.x
 		y_e = self.goal_y - self.y
 
@@ -84,13 +100,15 @@ class wheel_controller:
 
 		theta_error = theta_heading - self.theta
 
-		self.offset = theta_error/math.pi * 170 / 6
+		#print theta_heading, theta_error
+
+		self.offset = theta_error/math.pi * 170 * offset_constant
 		self.offset = min(self.offset, 85)
 		self.offset = max(self.offset, -85)
 
 		#print x_e, y_e, self.offset
 
-
+		#print "offset: %f" % (self.offset)
 
 		# rospy.loginfo("x is %s", self.x)
 		# rospy.loginfo("y is %s", self.y)

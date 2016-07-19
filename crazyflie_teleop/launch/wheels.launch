@@ -10,7 +10,8 @@
   <arg name="path_name" default="bleh"/>
 
 
-  <remap from="/Robot_1/ground_pose" to="/eff/Robot_1/ground_pose"/>
+  <!--remap from="/Robot_1/ground_pose" to="/$(arg name)/Robot_1/ground_pose"/-->
+  <remap from="$(arg name)/wheel_control/goal_point" to="wheel_command/goal_point"/>
 
 
   <!-- run optitrack -->
