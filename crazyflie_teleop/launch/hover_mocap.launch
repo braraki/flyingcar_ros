@@ -7,7 +7,8 @@
   <arg name="x" default="0" />
   <arg name="y" default="0" />
   <arg name="z" default="0.5" />
-  <arg name="path_name" />
+  <arg name="path" />
+  <arg name="mode" default="2" />
 
   <node name="make_rviz" pkg="crazyflie_teleop" type="make_rviz.sh" args="$(arg name)">
   </node>
@@ -33,25 +34,20 @@
     <node name="joystick_controller" pkg="crazyflie_teleop" type="controller.py" output="screen"> <!-- NTS this should be one controller (wheels) -->
       <param name="use_crazyflie_controller" value="True" />
     </node>
-
+s
     <include file="$(find crazyflie_controller)/launch/crazyflie2.launch">
       <arg name="frame" value="$(arg frame)" />
     </include>
 
-<<<<<<< HEAD
-=======
-    <node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="2 $(find crazyflie_teleop)/paths/$(arg path_name)">
+    <node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="$(arg mode) $(find crazyflie_teleop)/paths/$(arg path)">
     </node>
     <!--<node name="pose" pkg="crazyflie_teleop" type="publish_pose_teleop.py" output="screen">
->>>>>>> bf398f47991e407b7ad02a00ce7f3f2b603e50f9
       <param name="name" value="goal" />
       <param name="rate" value="30" />
       <param name="x" value="$(arg x)" />
       <param name="y" value="$(arg y)" />
       <param name="z" value="$(arg z)" />
-<<<<<<< HEAD
     </node>-->
->>>>>>> bf398f47991e407b7ad02a00ce7f3f2b603e50f9
 
     <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" >
     </node>

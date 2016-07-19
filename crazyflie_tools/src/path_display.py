@@ -44,7 +44,7 @@ class PathDisplay():
 
 		#--------------------------------------------------------
 
-		rospy.Subscriber("pose_new",PoseStamped,self.make_path)
+		rospy.Subscriber("pose",PoseStamped,self.make_path)
 
 
 		self.pub = rospy.Publisher("path",Path,queue_size=10)
@@ -52,6 +52,9 @@ class PathDisplay():
 			self.pub_path()
 
 	def make_path(self,data):
+		pose = PoseStamped()
+		pose.header = data.header
+		pose.pose = data.pose
 		self.msg.poses.append(data)
 		#print "got data!"
 
