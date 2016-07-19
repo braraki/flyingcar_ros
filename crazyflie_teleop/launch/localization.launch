@@ -64,7 +64,8 @@
            TwistStamped, Imu). To add a new one, simply append the next number in the sequence to its base name,
            e.g., odom0, odom1, twist0, twist1, imu0, imu1, imu2, etc. The value should be the topic name. These
            parameters obviously have no default values, and must be specified. -->
-      <param name="pose0" value="/$(arg name)/pose"/>
+      <param name="pose0" value="/$(arg name)/pose_mocap"/>
+      <param name="pose1" value="/$(arg name)/pose_mocap"/>
       <param name="imu0" value="/$(arg name)/imu"/>
 
       <!-- Each sensor reading updates some or all of the filter's state. These options give you greater control over
@@ -77,6 +78,12 @@
 
       <rosparam param="pose0_config">[true,  true,  true,
                                       false, false, false,
+                                      false, false, false,
+                                      false, false, false,
+                                      false, false, false]</rosparam>
+
+      <rosparam param="pose1_config">[false,  false,  false,
+                                      true, true, true,
                                       false, false, false,
                                       false, false, false,
                                       false, false, false]</rosparam>
@@ -104,6 +111,7 @@
            this is acceptable. For orientation variables, it can lead to trouble. Users should make sure that all orientation
            variables have at least one source of absolute measurement. -->
       <param name="pose0_differential" value="false"/>
+      <param name="pose1_differential" value="false"/>      
       <param name="imu0_differential" value="false"/>
 
       <!-- When the node starts, if this parameter is true, then the first measurement is treated as a "zero point" for all
@@ -111,6 +119,7 @@
            that the relative parameter doesn't cause the measurement to be converted to a velocity before integrating it. If
            you simply want your measurements to start at 0 for a given sensor, set this to true. -->
       <param name="pose0_relative" value="false"/>
+      <param name="pose1_relative" value="true"/>
       <param name="imu0_relative" value="true"/>
 
       <!-- If we're including accelerations in our state estimate, then we'll probably want to remove any acceleration that
@@ -121,7 +130,7 @@
            if the node is unhappy with any settings or data. -->
       <param name="print_diagnostics" value="true"/>
 
-      <!--<remap from="odometry/filtered" to="$(arg name)/odometry/filtered"/>-->
+      <remap from="odometry/filtered" to="pose_localization"/>
 
 
     </node>

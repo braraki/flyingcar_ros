@@ -110,7 +110,7 @@ class WaypointNode:
 
 
 	def _listen_to_pos(self):
-		rospy.Subscriber("pose",PoseWithCovarianceStamped, self._position_updated)
+		rospy.Subscriber("pose",PoseStamped, self._position_updated)
 		return
 
 	def _position_updated(self,data): #gonna wanna adjust for decimal places?
@@ -119,9 +119,9 @@ class WaypointNode:
 		prev_y = self.y
 		prev_z = self.z
 
-		self.x = data.pose.pose.position.x
-		self.y = data.pose.pose.position.y
-		self.z = data.pose.pose.position.z
+		self.x = data.pose.position.x
+		self.y = data.pose.position.y
+		self.z = data.pose.position.z
 
 		update_time = data.header.stamp.nsecs
 
