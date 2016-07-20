@@ -31,13 +31,18 @@ class wheel_controller:
 		# margin of error
 		self.pos_error = 0.05
 
-		rospy.Subscriber("/goal_point", Pose2D, self.update_goal)
+		rospy.Subscriber("goal_point", Pose2D, self.update_goal)
 		rospy.Subscriber("/Robot_1/ground_pose", Pose2D, self.wheel_command)
 
 	def update_goal(self, data):
 		self.goal_x = data.x
 		self.goal_y = data.y
+		# print self.goal_x
+		# print self.goal_y
 		#self.prev_state = rospy.get_param('wheels/state')
+
+		#print self.goal_x, self.goal_y
+		#print self.x, self.y
 
 		if self.check_goal():
 			rospy.set_param('wheels/state', 0)
@@ -58,8 +63,8 @@ class wheel_controller:
 			# 		print("Service did not process request: " + str(exc))
 			self.offset = int(self.offset)
 			#print self.offset
-			rospy.set_param('wheels/pwm_1', 100 - self.offset)
-			rospy.set_param('wheels/pwm_2', 100 + self.offset)
+			rospy.set_param('wheels/pwm_1', 80 - self.offset)
+			rospy.set_param('wheels/pwm_2', 80 + self.offset)
 
 		try:
 			self._update_params(["wheels/state"])
@@ -72,20 +77,20 @@ class wheel_controller:
 		# rospy.loginfo("goal_y is %s", self.goal_y)
 		# rospy.loginfo("goal_theta is %s", self.goal_theta)
 
-
 	def check_goal(self):
 		if abs(self.x - self.goal_x) < self.pos_error and abs(self.y - self.goal_y) < self.pos_error:
 			return True
 		else:
 			return False
 
-
 	def wheel_command(self, data):
 		self.x = data.x
 		self.y = data.y
 		self.theta = data.theta
 
-		offset_constant = 1.0
+		# print self.x, self.y, self.theta*180/math.pi
+
+		offset_constant = 1.0 / 2
 
 		x_e = self.goal_x - self.x
 		y_e = self.goal_y - self.y
@@ -105,6 +110,8 @@ class wheel_controller:
 		self.offset = theta_error/math.pi * 170 * offset_constant
 		self.offset = min(self.offset, 85)
 		self.offset = max(self.offset, -85)
+
+		#print self.offset
 
 		#print x_e, y_e, self.offset
 
