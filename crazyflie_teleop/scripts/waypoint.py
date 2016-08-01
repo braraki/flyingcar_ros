@@ -91,7 +91,7 @@ class WaypointNode:
 		#-----------------------------------
 
 
-		self. goal_pub = rospy.Publisher("goal",PoseStamped, queue_size=1)
+		self.goal_pub = rospy.Publisher("goal",PoseStamped, queue_size=1)
 
 		if self.flight_mode != 4:
 			self._get_flight_path(self.path_file)

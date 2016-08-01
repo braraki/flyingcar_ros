@@ -31,27 +31,22 @@
       <param name="dev" value="$(arg joy_dev)" />
     </node>
 
-    <node name="joystick_controller" pkg="crazyflie_teleop" type="controller.py" output="screen"> <!-- NTS this should be one controller (wheels) -->
+    <!--<node name="joystick_controller" pkg="crazyflie_teleop" type="controller.py" output="screen"> 
       <param name="use_crazyflie_controller" value="True" />
+    </node>-->
+
+    <node name="crawler" pkg="crazyflie_teleop" type="crawler.py" output="screen">
     </node>
 
+    <!--<node name="roller" pkg="crazyflie_teleop" type="roller.py" output="screen">
+    </node>-->
     <include file="$(find crazyflie_controller)/launch/crazyflie2.launch">
       <arg name="frame" value="$(arg frame)" />
     </include>
 
 
-    <node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="$(arg mode) $(find crazyflie_teleop)/paths/$(arg path)">
-    </node>
-    <!--<node name="pose" pkg="crazyflie_teleop" type="publish_pose_teleop.py" output="screen">
-
-    <!--<node name="pose" pkg="crazyflie_teleop" type="publish_pose_teleop.py" output="screen">
-      <param name="name" value="goal" />
-      <param name="rate" value="30" />
-      <param name="x" value="$(arg x)" />
-      <param name="y" value="$(arg y)" />
-      <param name="z" value="$(arg z)" />
+    <!--<node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="$(arg mode) $(find crazyflie_teleop)/paths/$(arg path)">
     </node>-->
-
 
     <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" >
     </node>
