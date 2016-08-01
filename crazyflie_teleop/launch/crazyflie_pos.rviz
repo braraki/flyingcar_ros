@@ -80,7 +80,7 @@ Visualization Manager:
       Shaft Length: 0.1
       Shaft Radius: 0.02
       Shape: Arrow
-      Topic: /lam/goal
+      Topic: /kal/goal
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -95,7 +95,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /lam/path
+      Topic: /kal/path
       Unreliable: false
       Value: true
   Enabled: true
@@ -157,3 +157,4 @@ Window Geometry:
   Width: 1481
   X: 61
   Y: 14
+

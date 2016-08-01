@@ -7,10 +7,11 @@
   <arg name="x" default="0" />
   <arg name="y" default="0" />
   <arg name="z" default="0" />
-  <arg name="path_name" default="bleh"/>
+  <arg name="path" default="bleh"/>
 
 
-  <remap from="/Robot_1/ground_pose" to="/eff/Robot_1/ground_pose"/>
+  <!--remap from="/Robot_1/ground_pose" to="/$(arg name)/Robot_1/ground_pose"/-->
+  <remap from="$(arg name)/wheel_control/goal_point" to="wheel_command/goal_point"/>
 
 
   <!-- run optitrack -->
@@ -25,7 +26,7 @@
       <arg name="name" value="$(arg name)" />
     </include>
     <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen"/>
-
+    <node name="wheel_command" pkg="crazyflie_teleop" type="wheel_command.py" output="screen" args="$(find crazyflie_teleop)/drive_paths/$(arg path)"/>
   </group>
 
 
@@ -35,7 +36,7 @@
 
   <param name="/cf_list/$(arg name)" type="boolean" value="True"/> 
 
-  <node name="wheel_command" pkg="crazyflie_teleop" type="wheel_command.py" output="screen"/>
+
 
   <node name="cf_selector" pkg="crazyflie_teleop" type="cf_selector.py">
   </node>
