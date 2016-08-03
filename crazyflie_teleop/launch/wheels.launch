@@ -14,19 +14,25 @@
   <remap from="$(arg name)/wheel_control/goal_point" to="wheel_command/goal_point"/>
 
 
+
   <!-- run optitrack -->
   <include file="$(find mocap_optitrack)/launch/mocap.launch">
   </include>
 
-  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch" respawn="true">
   </include>
 
   <group ns="$(arg name)" >
+    <node name="pose_converter" type="pose_converter.py" pkg="crazyflie_tools" args="$(arg name) $(arg number)">
+    </node>
     <include file="$(find crazyflie_driver)/launch/crazyflie_add.launch">
       <arg name="name" value="$(arg name)" />
     </include>
     <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen"/>
     <node name="wheel_command" pkg="crazyflie_teleop" type="wheel_command.py" output="screen" args="$(find crazyflie_teleop)/drive_paths/$(arg path)"/>
+<!--     <include file="$(find crazyflie_teleop)/launch/localization.launch">
+      <arg name="name" value="$(arg name)"/>
+    </include> -->
   </group>
 
 
