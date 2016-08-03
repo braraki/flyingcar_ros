@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-#NTS NEED TO ADD SUPPORT FOR MODE 4
-
 import rospy
 import tf
 
@@ -20,19 +18,9 @@ import numpy as np
 from map_maker.srv import *
 from map_maker.msg import HiPathTime
 from nav_msgs.msg import Path
-from enum import Enum
+
+from map_maker import gen_adj_array_info_dict as infoDict
 #---------
-
-class Category(Enum): #stuff for Jack's planner
-	mark = 0
-	land = 1
-	park = 2
-	interface = 3
-	cloud = 4
-	waypoint = 5
-
-static_category_dict = {0: Category.mark, 1: Category.land, 2: Category.park, 3: Category.interface, 4: Category.cloud, 5: Category.waypoint}
-
 
 class MakePath: #mkpath.path = current path for CF
 	def __init__(self,nodes_map,cf_num):
@@ -52,38 +40,6 @@ class MakePath: #mkpath.path = current path for CF
 			times = data.times
 			for i in range(len(nodes)):
 				self.path.append((self.nodes_map[nodes[i]][0],times[i]))#gives waypoint coordinates + time		
-		#else:
-			#print "Wrong ID! Data ID is: ", data.ID, ". CF_ID is: ", self.cf_num
-
-def map_maker_client(): #gets conversion dictionary 
-	print "Waiting for 'send_complex_map' service"
-	rospy.wait_for_service('/send_complex_map')
-	print "Got map service!"
-	try:
-		print('calling')
-		global info_dict
-		func = rospy.ServiceProxy('/send_complex_map', MapTalk)
-		resp = func()
-		print('recieved')
-		x_list = resp.x_list
-		y_list = resp.y_list
-		z_list = resp.z_list
-		num_IDs = resp.num_IDs
-		adjacency_array = resp.adjacency_array
-		A = np.array(adjacency_array)
-		A.shape = (num_IDs, num_IDs)
-		info_dict = {}
-		for ID in range(num_IDs):
-			x = (x_list[ID])
-			y = (y_list[ID])
-			z = (z_list[ID])
-			c = static_category_dict[resp.category_list[ID]]
-			info_dict[ID] = ((x, y, z),c)
-		#s = full_system(info_dict, A)
-		#fs.runner()
-	except rospy.ServiceException, e:
-		print("service call failed")
-	return info_dict
 
 class WaypointNode:
 
@@ -91,10 +47,9 @@ class WaypointNode:
 		rospy.init_node("waypoint_nav")
 
 		self.cf_num = cf_num
+		self.flight_path = []
 
 		#-----------------------------------
-
-		self.flight_path = []
 
 		#CF's Current goal
 		self.goal_index = 0
@@ -118,26 +73,26 @@ class WaypointNode:
 		self.msg.pose.orientation.x = quaternion[0]
 		self.msg.pose.orientation.y = quaternion[1]
 		self.msg.pose.orientation.z = quaternion[2]
-		self.msg.pose.orientation.w = quaternion[3] #NTS should make yaw settable from the flight path (optionally?)
+		self.msg.pose.orientation.w = quaternion[3] 
 
 		#-----------------------------------
 
 		#gets node map 
 		print "Getting node map..."
-		self.node_map = map_maker_client()
+		self.node_map = infoDict.map_maker_client('/send_complex_map')[0]
 		print "Got node map!"
 
 		#-----------------------------------
 
-
+		#Publisher for goal
 		self.goal_pub = rospy.Publisher("goal",PoseStamped, queue_size=1) #NTS Namespace
 
 		#-----------------------------------
 
 		#Threading
-
-		self.lock = threading.RLock()
-
+		self.goal_lock = threading.RLock() 	#this lock used to control access to self.goal_index
+										#prevents indexing problems caused by conflicting accesses 
+										#from _path_generator and _change goal.
 		path_thread = threading.Thread(target=self._path_generator)
 		pub_thread = threading.Thread(target=self._publish_goal)
 		flight_thread = threading.Thread(target=self.auto_flight)
@@ -152,64 +107,58 @@ class WaypointNode:
 
 
 	def _path_generator(self): #returns list of waypoints as tuples with time [((x,y,z),t),...]
-		print "Starting path maker..."
+		print "Starting path generator..."
 		mkpath = MakePath(self.node_map,self.cf_num)
+
 		while not rospy.is_shutdown():
 			if mkpath.path != self.flight_path:
-				self.lock.acquire()
-				print "lock acquired by 1!"
+				self.goal_lock.acquire()
+
 				self.flight_path = mkpath.path
 				self.goal_index = 0
-				self.lock.release()
-				print "lock released by 1!"
+				
+				self.goal_lock.release()
 			rospy.Rate(1)
+		return
 
 	def _change_goal(self):
-			print "2 trying to acquire lock..."
-			self.lock.acquire()
-			print "lock acquired by 2!"
-			try:
+			self.goal_lock.acquire()
+			try: #prevents failure in the case of bad syncronization (if path hasn't updated but goal_index has gone beyond end-of-list)
 				new_goal = self.flight_path[self.goal_index]
-				self.goal_x = new_goal[0][0]#/3.0
-				self.goal_y = new_goal[0][1]#/3.0
-				self.goal_z = new_goal[0][2]#/2.0
+				self.goal_x = new_goal[0][0]
+				self.goal_y = new_goal[0][1]
+				self.goal_z = new_goal[0][2]
 				self.goal_t = new_goal[1]
 			except:
 				pass
 			self.goal_index += 1
-			self.lock.release()
-			print "lock released by 2!"
-			return
-			# print self.goal_x, self.goal_y, self.goal_z
-		
+			self.goal_lock.release()
+			return		
 
 	def _publish_goal(self):
 		while not rospy.is_shutdown():
 			self.msg.header.stamp = rospy.Time.now()
 			self.msg.header.frame_id = "/world"
+
 			self.msg.pose.position.x = self.goal_x
 			self.msg.pose.position.y = self.goal_y
 			self.msg.pose.position.z = self.goal_z
 
 			self.goal_pub.publish(self.msg)
-			# print "Published Goal!"
 			rospy.Rate(30)
 		return
 
 	def auto_flight(self):
 		while not rospy.is_shutdown():
 			if time.time() >= self.goal_t:
-				# print "Changing Goal!"
 				self._change_goal()
-			rospy.Rate(30) #NTS are these rates set somewhere? Check!
+			rospy.Rate(30)
 		return
 
 
 if __name__ == '__main__':
 
-	#print flight_mode, flight_path
-
-	cf_num = sys.argv[1]
+	cf_num = sys.argv[1] #pass cf_num as argument to script 
 
 	waypointer = WaypointNode(cf_num)
 
