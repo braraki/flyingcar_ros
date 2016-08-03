@@ -2,6 +2,7 @@
 <launch>
   <arg name="name" />
   <arg name="number" default="1" />
+  <arg name="cf_num" default="0" />
   <arg name="frame" default="$(arg name)/base_link" />
   <arg name="joy_dev" default="/dev/input/js0" />
   <arg name="x" default="0" />
@@ -31,12 +32,12 @@
       <param name="dev" value="$(arg joy_dev)" />
     </node>
 
-    <!--<node name="joystick_controller" pkg="crazyflie_teleop" type="controller.py" output="screen"> 
+    <node name="joystick_controller" pkg="crazyflie_teleop" type="controller.py" output="screen"> 
       <param name="use_crazyflie_controller" value="True" />
-    </node>-->
-
-    <node name="crawler" pkg="crazyflie_teleop" type="crawler.py" output="screen">
     </node>
+
+    <!--<node name="crawler" pkg="crazyflie_teleop" type="crawler.py" output="screen">
+    </node>-->
 
     <!--<node name="roller" pkg="crazyflie_teleop" type="roller.py" output="screen">
     </node>-->
@@ -45,10 +46,13 @@
     </include>
 
 
-    <!--<node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="$(arg mode) $(find crazyflie_teleop)/paths/$(arg path)">
-    </node>-->
+    <node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="$(arg cf_num)">
+    </node>
 
     <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" >
+    </node>
+
+    <node name="sim_path_display" pkg="crazyflie_tools" type="sim_path_display.py" output="screen" args="$(arg cf_num)" >
     </node>
 
     <node pkg="tf" type="static_transform_publisher" name="baselink_broadcaster" args="0 0 0 0 0 0 1 $(arg frame) /Robot_$(arg number)/pose 100" /><!--Isn't messing anything up rn, but should maybe edit/remove this line NTS -->

@@ -2,6 +2,7 @@
 <launch>
   <arg name="name" />
   <arg name="number" default="1" />
+  <arg name="cf_num" default="0" />
   <arg name="frame" default="$(arg name)/base_link" />
   <arg name="joy_dev" default="/dev/input/js0" />
   <arg name="x" default="0" />
@@ -16,6 +17,7 @@
  <include file="$(find crazyflie_teleop)/launch/hover_mocap.launch">
  	<arg name="name" value="$(arg name)" />
  	<arg name="number" value="$(arg number)" />
+  <arg name="cf_num" value="$(arg cf_num)" />
   <arg name="path" value="$(arg path)" />
   <arg name="mode" value="$(arg mode)" />
   	<arg name="frame" value="$(arg frame)" />
@@ -29,6 +31,6 @@
   <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
   <!-- run rviz -->
   <param name="robot_description" command="$(find xacro)/xacro.py $(find crazyflie_description)/urdf/crazyflie.urdf.xacro" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find crazyflie_teleop)/launch/crazyflie_pos.rviz" required="true" /> <!--- NTS, can maybe change true to false, RVIZ not strictly neccesary? Just visualization -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find crazyflie_teleop)/launch/crazyflie_pos.rviz" required="true" /><!--- NTS, can maybe change true to false, RVIZ not strictly neccesary? Just visualization -->
 
 </launch>
