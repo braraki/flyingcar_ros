@@ -8,8 +8,8 @@
   <arg name="x" default="0" />
   <arg name="y" default="0" />
   <arg name="z" default="0.5" />
-  <arg name="path" />
-  <arg name="mode" default="2" />
+  <!--<arg name="path" />
+  <arg name="mode" default="2" />-->
 
   <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
   </include>
@@ -18,8 +18,8 @@
  	<arg name="name" value="$(arg name)" />
  	<arg name="number" value="$(arg number)" />
   <arg name="cf_num" value="$(arg cf_num)" />
-  <arg name="path" value="$(arg path)" />
-  <arg name="mode" value="$(arg mode)" />
+<!--   <arg name="path" value="$(arg path)" />
+  <arg name="mode" value="$(arg mode)" /> -->
   	<arg name="frame" value="$(arg frame)" />
   	<arg name="joy_dev" value="$(arg joy_dev)" />
   	<arg name="x" value="$(arg x)" />

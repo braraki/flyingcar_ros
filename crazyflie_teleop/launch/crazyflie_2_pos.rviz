@@ -130,7 +130,7 @@ Visualization Manager:
           Value: true
       Name: RobotModel
       Robot Description: robot_description
-      TF Prefix: doc
+      TF Prefix: igo
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -138,7 +138,7 @@ Visualization Manager:
       Axes Length: 1
       Axes Radius: 0.1
       Class: rviz/Pose
-      Color: 255; 25; 0
+      Color: 255; 255; 0
       Enabled: true
       Head Length: 0.1
       Head Radius: 0.05
@@ -146,13 +146,13 @@ Visualization Manager:
       Shaft Length: 0.1
       Shaft Radius: 0.02
       Shape: Arrow
-      Topic: /doc/goal
+      Topic: /igo/goal
       Unreliable: false
       Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
-      Color: 25; 255; 0
+      Color: 25; 255; 255
       Enabled: true
       Line Style: Lines
       Line Width: 0.03
@@ -161,13 +161,13 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /doc/path
+      Topic: /igo/path
       Unreliable: false
       Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
-      Color: 255; 0; 0
+      Color: 255; 255; 0
       Enabled: true
       Line Style: Lines
       Line Width: 0.03
@@ -176,7 +176,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /doc/d_path
+      Topic: /igo/d_path
       Unreliable: false
       Value: true 
   Enabled: true

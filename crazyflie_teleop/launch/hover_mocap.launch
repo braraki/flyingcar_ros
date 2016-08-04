@@ -8,11 +8,11 @@
   <arg name="x" default="0" />
   <arg name="y" default="0" />
   <arg name="z" default="0.5" />
-  <arg name="path" />
-  <arg name="mode" default="2" />
+<!--   <arg name="path" />
+  <arg name="mode" default="2" /> -->
 
-  <node name="make_rviz" pkg="crazyflie_teleop" type="make_rviz.sh" args="$(arg name)">
-  </node>
+  <!-- <node name="make_rviz" pkg="crazyflie_teleop" type="make_rviz.sh" args="$(arg name)">
+  </node> -->
 
   <group ns="$(arg name)">
 
