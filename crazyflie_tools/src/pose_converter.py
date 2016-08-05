@@ -23,6 +23,7 @@ class Converter():
 		pose = PoseWithCovariance()
 		pose.pose = data.pose
 		pose.covariance = [0] * 36
+		pose.covariance[0] = -1
 		msg.pose = pose
 		pose_converted = rospy.Publisher("pose_mocap",PoseWithCovarianceStamped,queue_size=10) 
 		pose_converted.publish(msg) 

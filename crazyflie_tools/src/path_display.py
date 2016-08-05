@@ -2,14 +2,18 @@
 
 import rospy
 import tf
+import sys
 
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 
+import threading
+
 class PathDisplay():
 
-	def __init__(self):
-		
+	def __init__(self,in_topic,out_topic):
+		self.in_topic = in_topic
+		self.out_topic = out_topic
 		self.init_pose = PoseStamped()
 		self.init_pose.header.seq = 0
 		self.init_pose.header.stamp = rospy.Time.now()
@@ -40,23 +44,26 @@ class PathDisplay():
 		self.msg.header.frame_id = "/world"
 		self.msg.poses.append(self.init_pose)
 
-		print self.msg
+		#print self.msg
 
 		#--------------------------------------------------------
 
-		rospy.Subscriber("pose",PoseStamped,self.make_path)
+		rospy.Subscriber(self.in_topic,PoseStamped,self.make_path)
 
 
-		self.pub = rospy.Publisher("path",Path,queue_size=10)
+		self.pub = rospy.Publisher(self.out_topic,Path,queue_size=10)
 		while not rospy.is_shutdown():
 			self.pub_path()
+			rospy.Rate(30)
 
 	def make_path(self,data):
 		pose = PoseStamped()
 		pose.header = data.header
 		pose.pose = data.pose
 		self.msg.poses.append(data)
-		#print "got data!"
+		# if len(self.msg.poses) > 100:
+		# 	self.msg.poses.pop(0)
+
 
 	def pub_path(self):
 		self.msg.header.stamp = rospy.Time.now()
@@ -66,5 +73,9 @@ class PathDisplay():
 
 if __name__ == '__main__':
 	rospy.init_node("path_display")
-	display = PathDisplay()
+	cf_num = sys.argv[1]
+	display_pose = PathDisplay("/Robot_"+str(cf_num)+"/pose","path")
+	
+
+
 

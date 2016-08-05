@@ -64,7 +64,7 @@ Visualization Manager:
           Value: true
       Name: RobotModel
       Robot Description: robot_description
-      TF Prefix: eff
+      TF Prefix: Robot_3
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -98,6 +98,21 @@ Visualization Manager:
       Topic: /eff/path
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 0; 0
+      Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic: /igo/d_path
+      Unreliable: false
+      Value: true 
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -157,7 +172,3 @@ Window Geometry:
   Width: 1481
   X: 61
   Y: 14
-<<<<<<< HEAD
-=======
-
->>>>>>> dc8321060fbcc8bf4a163e9b4bc33dd1543bbeb6

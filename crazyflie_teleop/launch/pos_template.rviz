@@ -98,6 +98,21 @@ Visualization Manager:
       Topic: /ROBOT_NAME/path
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 0; 0
+      Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic: /ROBOT_NAME/d_path
+      Unreliable: false
+      Value: true 
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

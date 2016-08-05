@@ -9,9 +9,10 @@ import threading
 
 class Waypoint():
 
-	def __init__(self, path_file=None):
+	def __init__(self, cf_num, path_file=None):
 		rospy.init_node('wheel_command')
 
+		self.cf_num = cf_num
 		self.path_file = path_file
 		self.drive_path = []
 
@@ -44,7 +45,7 @@ class Waypoint():
 		drive_thread.start()
 
 	def _listen_to_pos(self):
-		rospy.Subscriber("/Robot_3/ground_pose",Pose2D, self._position_updated)
+		rospy.Subscriber("/Robot_"+str(self.cf_num)+"/ground_pose",Pose2D, self._position_updated)
 		return
 
 	def _position_updated(self, data):
@@ -105,8 +106,9 @@ class Waypoint():
 
 if __name__ == '__main__':
 	drive_path = sys.argv[1]
+	cf_num = sys.argv[2]
 
-	waypoint_drive = Waypoint(drive_path)
+	waypoint_drive = Waypoint(cf_num, drive_path)
 
 	while not rospy.is_shutdown():
 		rospy.spin()
