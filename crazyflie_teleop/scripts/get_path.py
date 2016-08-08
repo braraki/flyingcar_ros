@@ -20,16 +20,18 @@ static_category_dict = {0: Category.mark, 1: Category.land, 2: Category.park, 3:
 
 class MakePath:
 	def __init__(self,nodes_map):
-		rospy.Subscriber("/si_planner/path_topic",HiPath,self._convert_path)
+		rospy.Subscriber("/highlighter/path_topic",HiPath,self._convert_path)
 		self.nodes_map = nodes_map
 		self.path = []
 
 	def _convert_path(self,data):
 		self.path = []
+		print "here!"
 		nodes = data.path
 		for node in nodes:
 			self.path.append(self.nodes_map[node][0])
 		print self.path
+
 
 def map_maker_client():
 	rospy.wait_for_service('send_map')
@@ -48,9 +50,9 @@ def map_maker_client():
 		A.shape = (num_IDs, num_IDs)
 		info_dict = {}
 		for ID in range(num_IDs):
-			x = (x_list[ID])
-			y = (y_list[ID])
-			z = (z_list[ID])
+			x = (x_list[ID])/2000.0
+			y = (y_list[ID])/2000.0
+			z = (z_list[ID])/2000.0
 			c = static_category_dict[resp.category_list[ID]]
 			info_dict[ID] = ((x, y, z),c)
 		#s = full_system(info_dict, A)

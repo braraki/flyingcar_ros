@@ -2,6 +2,7 @@
 
 import rospy
 import tf
+import sys
 
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
@@ -72,7 +73,8 @@ class PathDisplay():
 
 if __name__ == '__main__':
 	rospy.init_node("path_display")
-	display_pose = PathDisplay("pose","path")
+	cf_num = sys.argv[1]
+	display_pose = PathDisplay("/Robot_"+str(cf_num)+"/pose","path")
 	
 
 

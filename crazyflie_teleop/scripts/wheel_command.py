@@ -2,29 +2,34 @@
 
 import rospy
 from geometry_msgs.msg import Pose2D
+from crazyflie_teleop.msg import DriveCmd
 from crazyflie_driver.srv import UpdateParams
 import sys
 import threading
 
 class Waypoint():
 
-	def __init__(self, path_file=None):
+	def __init__(self, cf_num, path_file=None):
 		rospy.init_node('wheel_command')
 
+		self.cf_num = cf_num
 		self.path_file = path_file
 		self.drive_path = []
 
-		self.msg = Pose2D()
+		self.msg = DriveCmd()
+		#self.msg = Pose2D()
 
 		self.x = 0
 		self.y = 0
 		
 		self.goal_x = 0
 		self.goal_y = 0
+		self.goal_speed = 0
 
 		self.pos_error = 0.05
 
-		self.goal_pub = rospy.Publisher('goal_point',Pose2D, queue_size=1)
+		self.goal_pub = rospy.Publisher('goal_point',DriveCmd, queue_size=1)
+		#self.goal_pub = rospy.Publisher('goal_point',Pose2D, queue_size=1)
 		self._get_drive_path(self.path_file)
 		
 		pub_thread = threading.Thread(target=self._publish_goal)
@@ -40,16 +45,14 @@ class Waypoint():
 		drive_thread.start()
 
 	def _listen_to_pos(self):
-		rospy.Subscriber("/Robot_1/ground_pose",Pose2D, self._position_updated)
+		rospy.Subscriber("/Robot_"+str(self.cf_num)+"/ground_pose",Pose2D, self._position_updated)
 		return
 
 	def _position_updated(self, data):
 		self.x = data.x
 		self.y = data.y
-		# print "self.x is ", self.x
-		# print "self.y is ", self.y
 
-	def _get_drive_path(self, path_file): #file format should be x pos,y pos,z pos(,wait time). New line for each waypoint. 
+	def _get_drive_path(self, path_file): #file format should be x pos,y pos, desired speed. New line for each waypoint. 
 		f = open(path_file,'r')
 		for line in f:
 			point = line.strip().split(',')
@@ -66,6 +69,7 @@ class Waypoint():
 			new_goal = self.drive_path.pop(0)
 			self.goal_x = new_goal[0]
 			self.goal_y = new_goal[1]
+			self.goal_speed = new_goal[2]
 			# print "self.goal_x is " , self.goal_x
 			# print "self.goal_y is " , self.goal_y
 		print "Updated Goal!"
@@ -74,6 +78,8 @@ class Waypoint():
 		while not rospy.is_shutdown():
 			self.msg.x = self.goal_x
 			self.msg.y = self.goal_y
+			self.msg.speed = self.goal_speed
+			#self.msg.theta = self.goal_speed
 			# print "self.msg.x is ", self.msg.x
 			# print "self.msg.y is ", self.msg.y
 			self.goal_pub.publish(self.msg)
@@ -100,8 +106,9 @@ class Waypoint():
 
 if __name__ == '__main__':
 	drive_path = sys.argv[1]
+	cf_num = sys.argv[2]
 
-	waypoint_drive = Waypoint(drive_path)
+	waypoint_drive = Waypoint(cf_num, drive_path)
 
 	while not rospy.is_shutdown():
 		rospy.spin()
