@@ -13,7 +13,7 @@ class wheel_controller:
 		rospy.loginfo("found update_params service")
 		self._update_params = rospy.ServiceProxy('update_params', UpdateParams)
 
-		rospy.loginfo("waiting for emergency service")
+		rospy.loginfo("waiting for emergency service") #NOTE: This service probably isn't needed
 		rospy.wait_for_service('emergency')
 		rospy.loginfo("found emergency service")
 		self._emergency = rospy.ServiceProxy('emergency', Empty)
@@ -31,8 +31,8 @@ class wheel_controller:
 		# margin of error
 		self.pos_error = 0.05
 
-		rospy.Subscriber("goal_point", Pose2D, self.update_goal)
-		rospy.Subscriber("/Robot_1/ground_pose", Pose2D, self.wheel_command)
+		rospy.Subscriber("goal_point", Pose2D, self.update_goal) #Should maybe change this to "goal" and have both controller nodes use it? (if z=0, then robot should drive or something?)
+		rospy.Subscriber("/Robot_1/ground_pose", Pose2D, self.wheel_command) #NOTE: Robot # should be passed as a parameter into the file
 
 	def update_goal(self, data):
 		self.goal_x = data.x

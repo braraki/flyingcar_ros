@@ -16,19 +16,19 @@ class Controller():
         rospy.loginfo("found emergency service")
         self._emergency = rospy.ServiceProxy('emergency', Empty)
 
-        if use_controller:
-            rospy.loginfo("waiting for land service")
-            rospy.wait_for_service('land')
-            rospy.loginfo("found land service")
-            self._land = rospy.ServiceProxy('land', Empty)
+        # if use_controller:
+        #     rospy.loginfo("waiting for land service")
+        #     rospy.wait_for_service('land')
+        #     rospy.loginfo("found land service")
+        #     self._land = rospy.ServiceProxy('land', Empty)
 
-            rospy.loginfo("waiting for takeoff service")
-            rospy.wait_for_service('takeoff')
-            rospy.loginfo("found takeoff service")
-            self._takeoff = rospy.ServiceProxy('takeoff', Empty)
-        else:
-            self._land = None
-            self._takeoff = None
+        #     rospy.loginfo("waiting for takeoff service")
+        #     rospy.wait_for_service('takeoff')
+        #     rospy.loginfo("found takeoff service")
+        #     self._takeoff = rospy.ServiceProxy('takeoff', Empty)
+        # else:
+        self._land = None
+        self._takeoff = None
 
         # subscribe to the joystick at the end to make sure that all required
         # services were found
@@ -39,11 +39,13 @@ class Controller():
         for i in range(0, len(data.buttons)):
             if self._buttons == None or data.buttons[i] != self._buttons[i]:
                 if i == 0 and data.buttons[i] == 1 and self._land != None:
-                    self._land()
+                    pass
+                    #self._land()
                 if i == 1 and data.buttons[i] == 1:
                     self._emergency()
                 if i == 2 and data.buttons[i] == 1 and self._takeoff != None:
-                    self._takeoff()
+                    pass
+                    #self._takeoff()
                 if i == 4 and data.buttons[i] == 1:
                     rospy.set_param("wheels/state", 2)
                     rospy.set_param("wheels/pwm_1", 230)

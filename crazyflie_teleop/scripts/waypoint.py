@@ -22,6 +22,9 @@ from nav_msgs.msg import Path
 from map_maker import gen_adj_array_info_dict as infoDict
 #---------
 
+#Add takeoff, land, emergency services
+#get to takeoff/land if z=/!=0 
+
 class MakePath: #mkpath.path = current path for CF
 	def __init__(self,nodes_map,cf_num):
 		print "Initializing converter..."
@@ -39,12 +42,29 @@ class MakePath: #mkpath.path = current path for CF
 			nodes = data.path
 			times = data.times
 			for i in range(len(nodes)):
-				self.path.append((self.nodes_map[nodes[i]][0],times[i]))#gives waypoint coordinates + time		
+				self.path.append((self.nodes_map[nodes[i]][0],times[i],self.nodes_map[nodes[i]][1])) #gives waypoint coordinates + time + waypoint type		
 
 class WaypointNode:
 
 	def __init__(self,cf_num):
 		rospy.init_node("waypoint_nav")
+
+		rospy.loginfo("waiting for emergency service")
+		rospy.wait_for_service('emergency')
+		rospy.loginfo("found emergency service")
+		self._emergency = rospy.ServiceProxy('emergency', Empty)
+
+		rospy.loginfo("waiting for land service")
+		rospy.wait_for_service('land')
+		rospy.loginfo("found land service")
+		self._land = rospy.ServiceProxy('land', Empty)
+
+		rospy.loginfo("waiting for takeoff service")
+		rospy.wait_for_service('takeoff')
+		rospy.loginfo("found takeoff service")
+		self._takeoff = rospy.ServiceProxy('takeoff', Empty)
+
+		self.in_air = False
 
 		self.cf_num = cf_num
 		self.flight_path = []
@@ -57,6 +77,7 @@ class WaypointNode:
 		self.goal_y = 0 
 		self.goal_z = 0
 		self.goal_t = 0
+		self.goal_type = 'None'
 
 		#-----------------------------------
 
@@ -129,6 +150,7 @@ class WaypointNode:
 				self.goal_y = new_goal[0][1]
 				self.goal_z = new_goal[0][2]
 				self.goal_t = new_goal[1]
+				self.goal_type = new_goal[2]
 			except:
 				pass
 			self.goal_index += 1
@@ -150,6 +172,15 @@ class WaypointNode:
 
 	def auto_flight(self):
 		while not rospy.is_shutdown():
+			#print "In Air: ",self.in_air
+			if not self.in_air and ( self.goal_type == 3 or self.goal_type == 4 ): # self.goal_z != 0:
+				self._takeoff()
+				#print "Takeoff requested!"
+				self.in_air = True
+			elif self.in_air and  not ( self.goal_type == 3 or self.goal_type == 4 ): # self.goal_z == 0:
+				self._land()
+				#print "Landing requested!"
+				self.in_air = False
 			if time.time() >= self.goal_t:
 				self._change_goal()
 			rospy.Rate(30)

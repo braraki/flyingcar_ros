@@ -11,18 +11,9 @@ from map_maker.srv import *
 from map_maker.msg import HiPathTime
 from nav_msgs.msg import Path
 from enum import Enum
+from map_maker import gen_adj_array_info_dict as infoDict
+
 #---------
-
-class Category(Enum): #stuff for Jack's planner
-	mark = 0
-	land = 1
-	park = 2
-	interface = 3
-	cloud = 4
-	waypoint = 5
-
-static_category_dict = {0: Category.mark, 1: Category.land, 2: Category.park, 3: Category.interface, 4: Category.cloud, 5: Category.waypoint}
-
 
 class MakePath: #mkpath.path = current path for CF
 	def __init__(self,nodes_map,cf_num):
@@ -41,43 +32,13 @@ class MakePath: #mkpath.path = current path for CF
 				for i in range(len(nodes)):
 					self.path.append(self.nodes_map[nodes[i]][0]) #gives waypoint coordinates + time
 
-def map_maker_client(): #planner stuff
-	print "Waiting for 'send_complex_map' service"
-	rospy.wait_for_service('/send_complex_map')
-	print "Got map service!"
-	try:
-		print('calling')
-		global info_dict
-		func = rospy.ServiceProxy('/send_complex_map', MapTalk)
-		resp = func()
-		print('recieved')
-		x_list = resp.x_list
-		y_list = resp.y_list
-		z_list = resp.z_list
-		num_IDs = resp.num_IDs
-		adjacency_array = resp.adjacency_array
-		A = np.array(adjacency_array)
-		A.shape = (num_IDs, num_IDs)
-		info_dict = {}
-		for ID in range(num_IDs):
-			x = (x_list[ID])
-			y = (y_list[ID])
-			z = (z_list[ID])
-			c = static_category_dict[resp.category_list[ID]]
-			info_dict[ID] = ((x, y, z),c)
-		#s = full_system(info_dict, A)
-		#fs.runner()
-	except rospy.ServiceException, e:
-		print("service call failed")
-	return info_dict
-
 class PathDisplay():
 
 	def __init__(self,in_topic,out_topic,cf_num):
 
 		self.cf_num = cf_num
 
-		self.node_map = map_maker_client()
+		self.node_map = infoDict.map_maker_client('/send_complex_map')[0]
 
 		self.mkpath = MakePath(self.node_map, self.cf_num)
 
