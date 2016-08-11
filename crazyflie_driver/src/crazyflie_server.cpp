@@ -147,7 +147,10 @@ private:
       std::string group(p.begin(), p.begin() + pos);
       std::string name(p.begin() + pos + 1, p.end());
 
+      //ROS_INFO("group: %s; name: %s",group.c_str(),name.c_str());
+
       auto entry = m_cf.getParamTocEntry(group, name);
+
       if (entry)
       {
         switch (entry->type) {
@@ -428,7 +431,7 @@ private:
 
   void onLinkQuality(float linkQuality) {
       if (linkQuality < 0.7) {
-        ROS_WARN("Link Quality low (%f)", linkQuality);
+        //ROS_WARN("Link Quality low (%f)", linkQuality); //NTS: changed this!
       }
   }
 

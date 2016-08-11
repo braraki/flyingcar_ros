@@ -17,16 +17,9 @@ import time
 import numpy as np
 from map_maker.srv import *
 from map_maker.msg import HiPathTime
-from nav_msgs.msg import Path
-from crazyflie_teleop.msg import DriveCmd
 
 from map_maker import gen_adj_array_info_dict as infoDict
-from crazyflie_driver.srv import UpdateParams
-
 #---------
-
-#Add takeoff, land, emergency services
-#get to takeoff/land if z=/!=0 
 
 class MakePath: #mkpath.path = current path for CF
 	def __init__(self,nodes_map,cf_num):
@@ -52,10 +45,6 @@ class WaypointNode:
 	def __init__(self,cf_num):
 		rospy.init_node("waypoint_nav")
 
-		rospy.wait_for_service('update_params')
-		rospy.loginfo("found update_params service")
-		self._update_params = rospy.ServiceProxy('update_params', UpdateParams)
-
 		rospy.loginfo("waiting for emergency service")
 		rospy.wait_for_service('emergency')
 		rospy.loginfo("found emergency service")
@@ -74,7 +63,7 @@ class WaypointNode:
 		self.in_air = False
 
 		self.cf_num = cf_num
-		self.cf_path = []
+		self.flight_path = []
 
 		#-----------------------------------
 
@@ -89,25 +78,19 @@ class WaypointNode:
 		#-----------------------------------
 
 		#defines goal message
-		self.flight_msg = PoseStamped()
-		self.flight_msg.header.seq = 0
-		self.flight_msg.header.stamp = rospy.Time.now()
-		self.flight_msg.header.frame_id = "/world"
-		self.flight_msg.pose.position.x = 0
-		self.flight_msg.pose.position.y = 0
-		self.flight_msg.pose.position.z = 0
-		quaternion = tf.transformations.quaternion_from_euler(0.0, 0.0, 0.0)
-		self.flight_msg.pose.orientation.x = quaternion[0]
-		self.flight_msg.pose.orientation.y = quaternion[1]
-		self.flight_msg.pose.orientation.z = quaternion[2]
-		self.flight_msg.pose.orientation.w = quaternion[3]
-
-		print quaternion 
-
-		self.drive_msg = DriveCmd()
-		self.drive_msg.x = 0
-		self.drive_msg.y = 0
-		self.drive_msg.t = rospy.Time.now()
+		self.msg = PoseStamped()
+		self.msg.header.seq = 0
+		self.msg.header.stamp = rospy.Time.now()
+		self.msg.header.frame_id = "/world"
+		self.msg.pose.position.x = 0
+		self.msg.pose.position.y = 0
+		self.msg.pose.position.z = 0
+		yaw = 0
+		quaternion = tf.transformations.quaternion_from_euler(0, 0, yaw)
+		self.msg.pose.orientation.x = quaternion[0]
+		self.msg.pose.orientation.y = quaternion[1]
+		self.msg.pose.orientation.z = quaternion[2]
+		self.msg.pose.orientation.w = quaternion[3] 
 
 		#-----------------------------------
 
@@ -119,8 +102,7 @@ class WaypointNode:
 		#-----------------------------------
 
 		#Publisher for goal
-		self.flight_goal_pub = rospy.Publisher("flight_goal",PoseStamped, queue_size=1) #NTS Namespace
-		self.drive_goal_pub = rospy.Publisher("drive_goal",DriveCmd, queue_size=1) #NTS Namespace
+		self.goal_pub = rospy.Publisher("goal",PoseStamped, queue_size=1) #NTS Namespace
 
 		#-----------------------------------
 
@@ -129,30 +111,27 @@ class WaypointNode:
 										#prevents indexing problems caused by conflicting accesses 
 										#from _path_generator and _change goal.
 		path_thread = threading.Thread(target=self._path_generator)
-		pub_flight_thread = threading.Thread(target=self._publish_flight_goal)
-		pub_drive_thread = threading.Thread(target=self._publish_drive_goal)
-		nav_thread = threading.Thread(target=self.auto_nav)
+		pub_thread = threading.Thread(target=self._publish_goal)
+		flight_thread = threading.Thread(target=self.auto_flight)
 
 		path_thread.daemon = True
-		nav_thread.daemon = True
-		pub_flight_thread.daemon = True
-		pub_drive_thread.daemon = True
+		flight_thread.daemon = True
+		pub_thread.daemon = True
 
 		path_thread.start()
-		pub_flight_thread.start()
-		pub_drive_thread.start()
-		nav_thread.start()
+		pub_thread.start()
+		flight_thread.start()
 
 
-	def _path_generator(self): #returns list of waypoints as triples with time,type [((x,y,z),t,ty),...]
+	def _path_generator(self): #returns list of waypoints as tuples with time [((x,y,z),t),...]
 		print "Starting path generator..."
 		mkpath = MakePath(self.node_map,self.cf_num)
 
 		while not rospy.is_shutdown():
-			if mkpath.path != self.cf_path:
+			if mkpath.path != self.flight_path:
 				self.goal_lock.acquire()
 
-				self.cf_path = mkpath.path
+				self.flight_path = mkpath.path
 				self.goal_index = 0
 				
 				self.goal_lock.release()
@@ -162,7 +141,7 @@ class WaypointNode:
 	def _change_goal(self):
 			self.goal_lock.acquire()
 			try: #prevents failure in the case of bad syncronization (if path hasn't updated but goal_index has gone beyond end-of-list)
-				new_goal = self.cf_path[self.goal_index]
+				new_goal = self.flight_path[self.goal_index]
 				self.goal_x = new_goal[0][0]
 				self.goal_y = new_goal[0][1]
 				self.goal_z = new_goal[0][2]
@@ -174,49 +153,30 @@ class WaypointNode:
 			self.goal_lock.release()
 			return		
 
-	def _publish_flight_goal(self):
+	def _publish_goal(self):
 		while not rospy.is_shutdown():
-			self.flight_msg.header.stamp = rospy.Time.now()
-			self.flight_msg.header.frame_id = "/world"
+			self.msg.header.stamp = rospy.Time.now()
+			self.msg.header.frame_id = "/world"
 
-			self.flight_msg.pose.position.x = self.goal_x
-			self.flight_msg.pose.position.y = self.goal_y
-			self.flight_msg.pose.position.z = self.goal_z
+			self.msg.pose.position.x = self.goal_x
+			self.msg.pose.position.y = self.goal_y
+			self.msg.pose.position.z = self.goal_z
 
-			self.flight_goal_pub.publish(self.flight_msg)
+			self.goal_pub.publish(self.msg)
 			rospy.Rate(30)
 		return
 
-	def _publish_drive_goal(self):
-		while not rospy.is_shutdown():
-			self.drive_msg.x = self.goal_x
-			self.drive_msg.y = self.goal_y
-			self.drive_msg.t = rospy.Time.from_sec(self.goal_t)
-			#print "publishing drive goal!"
-			self.drive_goal_pub.publish(self.drive_msg)
-			rospy.Rate(30)
-		return
-
-	def auto_nav(self):
+	def auto_flight(self):
 		while not rospy.is_shutdown():
 			#print "In Air: ",self.in_air
-			#print self.goal_type
-			if not self.in_air and ( self.goal_type == 2 or self.goal_type == 3 or self.goal_type == 5): #NTS will change if the node mapping changes in map_maker
-				self.in_air = True																		#currently getting definitions from gen_adj_array_info_dict --> should maybe just import it? Unsure if that's more portable
-				rospy.set_param("in_air", self.in_air)
-				# rospy.set_param("wheels/state", 0)
-				# try:
-				# 	self._update_params(["wheels/state"])
-				# except:
-				# 	print "Could not update params. Gross."
+			if not self.in_air and ( self.goal_type == 3 or self.goal_type == 4 ): # self.goal_z != 0:
 				self._takeoff()
-			elif self.in_air and  not ( self.goal_type == 2 or self.goal_type == 3 or self.goal_type == 5): 
-				self.in_air = False
-				rospy.set_param("in_air", self.in_air)
+				#print "Takeoff requested!"
+				self.in_air = True
+			elif self.in_air and  not ( self.goal_type == 3 or self.goal_type == 4 ): # self.goal_z == 0:
 				self._land()
-				#rospy.sleep(1.5) #NTS this might mess something up later?
-				#rospy.set_param('wheels/state', 1)
-				#self._update_params(["wheels/state"])
+				#print "Landing requested!"
+				self.in_air = False
 			if time.time() >= self.goal_t:
 				self._change_goal()
 			rospy.Rate(30)
@@ -229,6 +189,5 @@ if __name__ == '__main__':
 
 	waypointer = WaypointNode(cf_num)
 
-	rospy.spin()
-	#while not rospy.is_shutdown(): #NTS maybe remove this
-	#	rospy.spin()	#just spin
+	while not rospy.is_shutdown():
+		rospy.spin()

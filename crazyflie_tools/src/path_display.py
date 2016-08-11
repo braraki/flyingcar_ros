@@ -73,7 +73,7 @@ class PathDisplay():
 
 if __name__ == '__main__':
 	rospy.init_node("path_display")
-	cf_num = sys.argv[1]
+	cf_num = sys.argv[1] 
 	display_pose = PathDisplay("/Robot_"+str(cf_num)+"/pose","path")
 	
 

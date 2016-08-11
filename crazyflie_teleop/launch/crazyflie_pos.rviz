@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Path1
+        - /Axes1
       Splitter Ratio: 0.617241
     Tree Height: 689
   - Class: rviz/Selection
@@ -64,7 +65,7 @@ Visualization Manager:
           Value: true
       Name: RobotModel
       Robot Description: robot_description
-      TF Prefix: doc
+      TF Prefix: kal
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -80,7 +81,7 @@ Visualization Manager:
       Shaft Length: 0.1
       Shaft Radius: 0.02
       Shape: Arrow
-      Topic: /doc/goal
+      Topic: /kal/flight_goal
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -95,7 +96,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /doc/path
+      Topic: /kal/path
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -110,9 +111,16 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /doc/d_path
+      Topic: /kal/d_path
       Unreliable: false
-      Value: true 
+      Value: true
+    - Class: rviz/Axes
+      Enabled: true
+      Length: 0.2
+      Name: Axes
+      Radius: 0.01
+      Reference Frame: kal/base_link
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -137,7 +145,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.66686
+      Distance: 4.69992
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -149,10 +157,10 @@ Visualization Manager:
         Z: 0.145126
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.550398
+      Pitch: 0.270398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.19541
+      Yaw: 3.21041
     Saved: ~
 Window Geometry:
   Displays:

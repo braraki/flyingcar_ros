@@ -10,9 +10,9 @@ import sys
 
 class Converter():
 
-	def __init__(self):
-		self.name=sys.argv[1]
-		self.number=sys.argv[2]			
+	def __init__(self,name,number):
+		self.name=name
+		self.number=number		
 		
 		rospy.Subscriber("/Robot_"+self.number+"/pose",PoseStamped,self._push_mocap_pose)
 		rospy.Subscriber("pose_localization",Odometry,self._push_localized_pose)
@@ -38,5 +38,7 @@ class Converter():
 
 if __name__ == '__main__':
 	rospy.init_node("pose_converter")
-	converter = Converter()
+	name = sys.argv[1]
+	number = sys.argv[2]
+	converter = Converter(name,number)
 	rospy.spin()

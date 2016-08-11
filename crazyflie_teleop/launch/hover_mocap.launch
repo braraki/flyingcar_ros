@@ -19,9 +19,9 @@
 	<node name="pose_converter" type="pose_converter.py" pkg="crazyflie_tools" args="$(arg name) $(arg number)">
     </node>
 
-<!--     <include file="$(find crazyflie_teleop)/launch/localization.launch">
+    <include file="$(find crazyflie_teleop)/launch/localization.launch">
       <arg name="name" value="$(arg name)"/>
-    </include> -->
+    </include>
 
     <include file="$(find crazyflie_driver)/launch/crazyflie_add.launch">
       <arg name="name" value="$(arg name)" />
@@ -39,6 +39,8 @@
     <node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="$(arg cf_num)">
     </node>
 
+<!--      <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number)">
+    </node> -->
 
     <!--<node name="crawler" pkg="crazyflie_teleop" type="crawler.py" output="screen">
     </node>-->
@@ -48,9 +50,9 @@
     <include file="$(find crazyflie_controller)/launch/crazyflie2.launch">
       <arg name="frame" value="$(arg frame)" />
     </include>
-
-    <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" >
-    </node>
+<!-- 
+    <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" args="$(number)">
+    </node> -->
 
     <node name="sim_path_display" pkg="crazyflie_tools" type="sim_path_display.py" output="screen" args="$(arg cf_num)" >
     </node>
