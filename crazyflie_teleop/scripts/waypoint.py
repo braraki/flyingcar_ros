@@ -72,6 +72,8 @@ class WaypointNode:
 		self._takeoff = rospy.ServiceProxy('takeoff', Empty)
 
 		self.in_air = False
+		rospy.set_param('in_air',self.in_air)
+
 
 		self.cf_num = cf_num
 		self.cf_path = []
@@ -203,7 +205,7 @@ class WaypointNode:
 			#print self.goal_type
 			if not self.in_air and ( self.goal_type == 2 or self.goal_type == 3 or self.goal_type == 5): #NTS will change if the node mapping changes in map_maker
 				self.in_air = True																		#currently getting definitions from gen_adj_array_info_dict --> should maybe just import it? Unsure if that's more portable
-				rospy.set_param("in_air", self.in_air)
+				rospy.set_param('in_air', self.in_air)
 				# rospy.set_param("wheels/state", 0)
 				# try:
 				# 	self._update_params(["wheels/state"])
@@ -212,7 +214,7 @@ class WaypointNode:
 				self._takeoff()
 			elif self.in_air and  not ( self.goal_type == 2 or self.goal_type == 3 or self.goal_type == 5): 
 				self.in_air = False
-				rospy.set_param("in_air", self.in_air)
+				rospy.set_param('in_air', self.in_air)
 				self._land()
 				#rospy.sleep(1.5) #NTS this might mess something up later?
 				#rospy.set_param('wheels/state', 1)

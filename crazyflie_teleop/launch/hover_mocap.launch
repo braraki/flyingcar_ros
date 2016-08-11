@@ -39,8 +39,8 @@
     <node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="$(arg cf_num)">
     </node>
 
-<!--      <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number)">
-    </node> -->
+     <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number)">
+    </node>
 
     <!--<node name="crawler" pkg="crazyflie_teleop" type="crawler.py" output="screen">
     </node>-->
