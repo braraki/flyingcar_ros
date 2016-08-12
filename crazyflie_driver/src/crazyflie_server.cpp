@@ -178,7 +178,7 @@ private:
         }
       }
       else {
-        ROS_ERROR("Could not find param %s/%s", group.c_str(), name.c_str());
+        // ROS_ERROR("Could not find param %s/%s", group.c_str(), name.c_str());
       }
     }
     return true;

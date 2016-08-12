@@ -72,6 +72,7 @@ class WaypointNode:
 		self._takeoff = rospy.ServiceProxy('takeoff', Empty)
 
 		self.in_air = False
+		rospy.set_param('in_air', False)
 
 		self.cf_num = cf_num
 		self.cf_path = []
@@ -209,11 +210,11 @@ class WaypointNode:
 				# 	self._update_params(["wheels/state"])
 				# except:
 				# 	print "Could not update params. Gross."
-				self._takeoff()
+				#self._takeoff()
 			elif self.in_air and  not ( self.goal_type == 2 or self.goal_type == 3 or self.goal_type == 5): 
 				self.in_air = False
 				rospy.set_param("in_air", self.in_air)
-				self._land()
+				#self._land()
 				#rospy.sleep(1.5) #NTS this might mess something up later?
 				#rospy.set_param('wheels/state', 1)
 				#self._update_params(["wheels/state"])

@@ -56,10 +56,11 @@ class wheel_controller:
 
 		rospy.Subscriber("drive_goal", DriveCmd, self.update_goal)
 		rospy.Subscriber("pose", PoseStamped, self.update_position)
+		self.wheel_command()
 
-		ctrl_thread = threading.Thread(target=self.wheel_command)
-		ctrl_thread.daemon = True
-		ctrl_thread.start()
+		# ctrl_thread = threading.Thread(target=self.wheel_command)
+		# ctrl_thread.daemon = True
+		# ctrl_thread.start()
 
 	def update_goal(self, data):
 		if self.goal_x != data.x or self.goal_y != data.y or self.goal_t != float(data.t.secs+data.t.nsecs*10**(-9)):
@@ -102,6 +103,7 @@ class wheel_controller:
 
 			self.prev_speeds.append(speed)
 			self.prev_update_time = update_time
+
 
 	def check_goal(self):
 		if abs(self.x - self.goal_x) < self.pos_error and abs(self.y - self.goal_y) < self.pos_error:
@@ -150,16 +152,16 @@ class wheel_controller:
 			# rospy.set_param('wheels/pwm_2', max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255)))
 
 			# print max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)), max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255))
-			
-			if not rospy.get_param("in_air"):
+			#print rospy.get_param('in_air')
+			if not rospy.get_param('in_air'):
 				if self.check_goal():
 					rospy.set_param('wheels/state', 0)
-					#print "state set to 0."
+					print "state set to 0."
 				else:
 					rospy.set_param('wheels/state', 1) #NTS might need to mess with this
 					rospy.set_param('wheels/pwm_1', max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)))
 					rospy.set_param('wheels/pwm_2', max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255)))
-					# print "parameters updated!"
+					print "parameters updated!"
 					print max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)), max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255))
 				try:
 					self._update_params(["wheels/state"])
