@@ -148,7 +148,7 @@ class WaypointNode:
 	def _path_generator(self): #returns list of waypoints as triples with time,type [((x,y,z),t,ty),...]
 		print "Starting path generator..."
 		mkpath = MakePath(self.node_map,self.cf_num)
-
+		r = rospy.Rate(1)
 		while not rospy.is_shutdown():
 			if mkpath.path != self.cf_path:
 				self.goal_lock.acquire()
@@ -157,7 +157,7 @@ class WaypointNode:
 				self.goal_index = 0
 				
 				self.goal_lock.release()
-			rospy.Rate(1)
+			r.sleep()
 		return
 
 	def _change_goal(self):
@@ -176,6 +176,7 @@ class WaypointNode:
 			return		
 
 	def _publish_flight_goal(self):
+		r = rospy.Rate(30)
 		while not rospy.is_shutdown():
 			self.flight_msg.header.stamp = rospy.Time.now()
 			self.flight_msg.header.frame_id = "/world"
@@ -185,20 +186,22 @@ class WaypointNode:
 			self.flight_msg.pose.position.z = self.goal_z
 
 			self.flight_goal_pub.publish(self.flight_msg)
-			rospy.Rate(30)
+			r.sleep()
 		return
 
 	def _publish_drive_goal(self):
+		r = rospy.Rate(30)
 		while not rospy.is_shutdown():
 			self.drive_msg.x = self.goal_x
 			self.drive_msg.y = self.goal_y
 			self.drive_msg.t = rospy.Time.from_sec(self.goal_t)
 			#print "publishing drive goal!"
 			self.drive_goal_pub.publish(self.drive_msg)
-			rospy.Rate(30)
+			r.sleep()
 		return
 
 	def auto_nav(self):
+		r = rospy.Rate(30)
 		while not rospy.is_shutdown():
 			#print "In Air: ",self.in_air
 			#print self.goal_type
@@ -220,7 +223,7 @@ class WaypointNode:
 				#self._update_params(["wheels/state"])
 			if time.time() >= self.goal_t:
 				self._change_goal()
-			rospy.Rate(30)
+			r.sleep()
 		return
 
 

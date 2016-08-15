@@ -19,6 +19,8 @@ class wheel_controller:
 		rospy.loginfo("found update_params service")
 		self._update_params = rospy.ServiceProxy('update_params', UpdateParams)
 
+		rospy.set_param('in_air', False)
+
 		self.cf_num = cf_num
 
 		self.x = 0
@@ -48,7 +50,7 @@ class wheel_controller:
 		self.theta_heading = 0
 		self.theta_error = 0
 
-		self.theta_offset_constant = 0.5
+		self.theta_offset_constant = 1.0
 		self.speed_offset_constant = 10
 
 		# margin of error
@@ -72,11 +74,12 @@ class wheel_controller:
 		self.goal_y = data.y
 		self.goal_t = float(data.t.secs+data.t.nsecs*10**(-9))
 
-		#print data.x, self.goal_x, data.y, self.goal_y
+		#print self.goal_x, self.goal_y
 
 
 		try:
-			self.goal_speed = math.sqrt((self.goal_x-self.prev_goal_x)**2+(self.goal_y-self.prev_goal_y)**2)/float(self.goal_t-self.prev_goal_t)
+			self.goal_speed = math.sqrt((self.goal_x-self.x)**2+(self.goal_y-self.y)**2)/float(self.goal_t-time.time())
+			#self.goal_speed = math.sqrt((self.goal_x-self.prev_goal_x)**2+(self.goal_y-self.prev_goal_y)**2)/float(self.goal_t-self.prev_goal_t)
 			#self.goal_speed = math.sqrt((self.goal_x-self.x)**2+(self.goal_y-self.y)**2)/float(self.goal_t-self.prev_goal_t) * 10**9 #time.time())
 		except:
 			pass
@@ -112,6 +115,7 @@ class wheel_controller:
 			return False
 
 	def wheel_command(self): #NTS could this be having bad timing interactions? It's completely possible that the goal updates during a runthrough.
+		r = rospy.Rate(3)
 		while not rospy.is_shutdown():	#NTS if goals and positions/angles change while running, this could affect calculation? Add a lock to be safe?
 			# print "entering commander!"	# NTS A lock might also mess up the subscribers because of lag?
 			# calculate baseline
@@ -134,10 +138,16 @@ class wheel_controller:
 
 
 			self.theta_error = self.theta_heading - self.theta
+			if self.theta_error > 180.0:
+				self.theta_error -= 360.0
+			elif self.theta_error < -180:
+				self.theta_error += 360
 			self.theta_offset = self.theta_error/math.pi * 170 * self.theta_offset_constant
-			self.theta_offset = min(self.theta_offset, 85)
-			self.theta_offset = max(self.theta_offset, -85)
+			#self.theta_offset = min(self.theta_offset, 85)
+			#self.theta_offset = max(self.theta_offset, -85)
 			self.theta_offset = int(self.theta_offset)
+
+			print x_e, y_e, self.theta_error*180/math.pi
 
 			# calculate speed offset
 			self.speed = float(sum(self.prev_speeds))/len(self.prev_speeds) if len (self.prev_speeds) > 0 else 0
@@ -158,18 +168,31 @@ class wheel_controller:
 					rospy.set_param('wheels/state', 0)
 					print "state set to 0."
 				else:
+					# pwm1 is on the right
+					# pwm 2 is on the left
 					rospy.set_param('wheels/state', 1) #NTS might need to mess with this
-					rospy.set_param('wheels/pwm_1', max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)))
-					rospy.set_param('wheels/pwm_2', max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255)))
+					theta_percent = self.theta_offset/math.pi
+					pwm = max(0,min(self.baseline + self.speed_offset, 255))
+					#pwm_right = max(0,min(pwm*(1+theta_percent/8),255))
+					#pwm_left = max(0,min(pwm*(1-theta_percent/8),255))
+					pwm_right = max(0,min(pwm + self.theta_offset, 255))
+					pwm_left = max(0,min(pwm - self.theta_offset, 255))
+					rospy.set_param('wheels/pwm_1', pwm_right)
+					rospy.set_param('wheels/pwm_2', pwm_left)
+
 					print "parameters updated!"
-					print max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)), max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255))
+					print self.theta_offset, self.speed_offset, self.baseline
+					print pwm_left, pwm_right
 				try:
 					self._update_params(["wheels/state"])
 					self._update_params(["wheels/pwm_1"])
 					self._update_params(["wheels/pwm_2"])
 				except rospy.ServiceException as exc:
 					print("Service did not process request: " + str(exc))
-			rospy.Rate(2)
+
+			r.sleep()
+		rospy.set_param('wheels/state', 0)
+		self._update_params(["wheels/state"])
 		return
 
 
