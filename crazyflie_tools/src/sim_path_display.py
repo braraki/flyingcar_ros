@@ -69,10 +69,11 @@ class PathDisplay():
 		self.path_msg.poses.append(self.init_pose)
 
 		self.pub = rospy.Publisher(self.out_topic,Path,queue_size=10)
+		r = rospy.Rate(30)
 		while not rospy.is_shutdown():
 			self.make_path()
 			self.pub_path()
-			rospy.Rate(30)
+			r.sleep()
 
 	def make_path(self):
 		self.path_msg.poses = []

@@ -73,8 +73,8 @@ class WaypointNode:
 		self._takeoff = rospy.ServiceProxy('takeoff', Empty)
 
 		self.in_air = False
-		rospy.set_param('in_air',self.in_air)
 
+		rospy.set_param('in_air',self.in_air)
 
 		self.cf_num = cf_num
 		self.cf_path = []
@@ -150,7 +150,7 @@ class WaypointNode:
 	def _path_generator(self): #returns list of waypoints as triples with time,type [((x,y,z),t,ty),...]
 		print "Starting path generator..."
 		mkpath = MakePath(self.node_map,self.cf_num)
-
+		r = rospy.Rate(1)
 		while not rospy.is_shutdown():
 			path = mkpath.path
 			#print len(path), len(self.cf_path)
@@ -168,7 +168,11 @@ class WaypointNode:
 				self.goal_index = 0
 				
 				self.goal_lock.release()
+<<<<<<< HEAD
 			rospy.Rate(30)
+=======
+			r.sleep()
+>>>>>>> e065bb50a2972cfb7c4b689fddb19c29b1e39d4b
 		return
 
 	def _change_goal(self):
@@ -187,6 +191,7 @@ class WaypointNode:
 			return		
 
 	def _publish_flight_goal(self):
+		r = rospy.Rate(30)
 		while not rospy.is_shutdown():
 			self.flight_msg.header.stamp = rospy.Time.now()
 			self.flight_msg.header.frame_id = "/world"
@@ -196,20 +201,22 @@ class WaypointNode:
 			self.flight_msg.pose.position.z = self.goal_z
 
 			self.flight_goal_pub.publish(self.flight_msg)
-			rospy.Rate(30)
+			r.sleep()
 		return
 
 	def _publish_drive_goal(self):
+		r = rospy.Rate(30)
 		while not rospy.is_shutdown():
 			self.drive_msg.x = self.goal_x
 			self.drive_msg.y = self.goal_y
 			self.drive_msg.t = rospy.Time.from_sec(self.goal_t)
 			#print "publishing drive goal!"
 			self.drive_goal_pub.publish(self.drive_msg)
-			rospy.Rate(30)
+			r.sleep()
 		return
 
 	def auto_nav(self):
+		r = rospy.Rate(30)
 		while not rospy.is_shutdown():
 			# print "Node 3 is: ", map_helper.is_air(self.goal_type)
 			#print "In Air: ",self.in_air
@@ -223,16 +230,18 @@ class WaypointNode:
 				# except:
 				# 	print "Could not update params. Gross."
 				#self._takeoff()
+
 			elif self.in_air and  not (  map_helper.is_air(self.goal_type) ): 
 				self.in_air = False
 				rospy.set_param('in_air', self.in_air)
+
 				#self._land()
 				#rospy.sleep(1.5) #NTS this might mess something up later?
 				#rospy.set_param('wheels/state', 1)
 				#self._update_params(["wheels/state"])
 			if time.time() >= self.goal_t:
 				self._change_goal()
-			rospy.Rate(30)
+			r.sleep()
 		return
 
 

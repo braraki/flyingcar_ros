@@ -16,8 +16,8 @@ class Waypoint():
 		self.path_file = path_file
 		self.drive_path = []
 
-		self.msg = DriveCmd()
-		#self.msg = Pose2D()
+		#self.msg = DriveCmd()
+		self.msg = Pose2D()
 
 		self.x = 0
 		self.y = 0
@@ -28,8 +28,8 @@ class Waypoint():
 
 		self.pos_error = 0.05
 
-		self.goal_pub = rospy.Publisher('goal_point',DriveCmd, queue_size=1)
-		#self.goal_pub = rospy.Publisher('goal_point',Pose2D, queue_size=1)
+		#self.goal_pub = rospy.Publisher('goal_point',DriveCmd, queue_size=1)
+		self.goal_pub = rospy.Publisher('goal_point',Pose2D, queue_size=1)
 		self._get_drive_path(self.path_file)
 		
 		pub_thread = threading.Thread(target=self._publish_goal)
@@ -78,8 +78,8 @@ class Waypoint():
 		while not rospy.is_shutdown():
 			self.msg.x = self.goal_x
 			self.msg.y = self.goal_y
-			self.msg.speed = self.goal_speed
-			#self.msg.theta = self.goal_speed
+			#self.msg.speed = self.goal_speed
+			self.msg.theta = self.goal_speed
 			# print "self.msg.x is ", self.msg.x
 			# print "self.msg.y is ", self.msg.y
 			self.goal_pub.publish(self.msg)
