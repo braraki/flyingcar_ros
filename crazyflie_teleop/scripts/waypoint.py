@@ -20,7 +20,7 @@ from map_maker.msg import HiPathTime
 from nav_msgs.msg import Path
 from crazyflie_teleop.msg import DriveCmd
 
-from map_maker import gen_adj_array_info_dict as infoDict
+from map_maker import map_maker_helper as map_helper
 from crazyflie_driver.srv import UpdateParams
 
 #---------
@@ -41,11 +41,12 @@ class MakePath: #mkpath.path = current path for CF
 		#print "Converting path..."
 		if int(data.ID) == int(self.cf_num):
 			#print "Converting path!"
-			self.path = []
+			path = []
 			nodes = data.path
 			times = data.times
 			for i in range(len(nodes)):
-				self.path.append((self.nodes_map[nodes[i]][0],times[i],self.nodes_map[nodes[i]][1])) #gives waypoint coordinates + time + waypoint type		
+				path.append((self.nodes_map[nodes[i]][0],times[i],self.nodes_map[nodes[i]][1])) #gives waypoint coordinates + time + waypoint type		
+			self.path = path
 
 class WaypointNode:
 
@@ -104,7 +105,7 @@ class WaypointNode:
 		self.flight_msg.pose.orientation.z = quaternion[2]
 		self.flight_msg.pose.orientation.w = quaternion[3]
 
-		print quaternion 
+		#print quaternion 
 
 		self.drive_msg = DriveCmd()
 		self.drive_msg.x = 0
@@ -115,7 +116,7 @@ class WaypointNode:
 
 		#gets node map 
 		print "Getting node map..."
-		self.node_map = infoDict.map_maker_client('/send_complex_map')[0]
+		self.node_map = map_helper.map_maker_client('/send_complex_map')[0]
 		print "Got node map!"
 
 		#-----------------------------------
@@ -151,14 +152,23 @@ class WaypointNode:
 		mkpath = MakePath(self.node_map,self.cf_num)
 
 		while not rospy.is_shutdown():
-			if mkpath.path != self.cf_path:
+			path = mkpath.path
+			#print len(path), len(self.cf_path)
+			if not path == self.cf_path:
+				print "updating path"
+			# 	for i in range(len(path)):
+			# 		if path[i] != self.cf_path[i]:
+			# 			print path[i], self.cf_path[i]
+				# print type(path)
+				# print "\n"
+				# print type(self.cf_path)
+				# print "-------------------------------------------------------------------------------------------------------------------------"
 				self.goal_lock.acquire()
-
 				self.cf_path = mkpath.path
 				self.goal_index = 0
 				
 				self.goal_lock.release()
-			rospy.Rate(1)
+			rospy.Rate(30)
 		return
 
 	def _change_goal(self):
@@ -201,9 +211,10 @@ class WaypointNode:
 
 	def auto_nav(self):
 		while not rospy.is_shutdown():
+			# print "Node 3 is: ", map_helper.is_air(self.goal_type)
 			#print "In Air: ",self.in_air
 			#print self.goal_type
-			if not self.in_air and ( self.goal_type == 2 or self.goal_type == 3 or self.goal_type == 5): #NTS will change if the node mapping changes in map_maker
+			if not self.in_air and ( map_helper.is_air(self.goal_type) ): #NTS will change if the node mapping changes in map_maker
 				self.in_air = True																		#currently getting definitions from gen_adj_array_info_dict --> should maybe just import it? Unsure if that's more portable
 				rospy.set_param('in_air', self.in_air)
 				# rospy.set_param("wheels/state", 0)
@@ -211,11 +222,11 @@ class WaypointNode:
 				# 	self._update_params(["wheels/state"])
 				# except:
 				# 	print "Could not update params. Gross."
-				self._takeoff()
-			elif self.in_air and  not ( self.goal_type == 2 or self.goal_type == 3 or self.goal_type == 5): 
+				#self._takeoff()
+			elif self.in_air and  not (  map_helper.is_air(self.goal_type) ): 
 				self.in_air = False
 				rospy.set_param('in_air', self.in_air)
-				self._land()
+				#self._land()
 				#rospy.sleep(1.5) #NTS this might mess something up later?
 				#rospy.set_param('wheels/state', 1)
 				#self._update_params(["wheels/state"])
