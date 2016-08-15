@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd $(dirname $0)
-cd ../launch
+cd ../launch/rviz
 
 rm -f "crazyflie_pos.rviz"
 
@@ -16,6 +16,6 @@ rm -f "crazyflie_pos.rviz"
 
 # cat ./rviz_template/rviz_foot >> "crazyflie_pos.rviz"
 
-sed "s/ROBOT_NAME/$1/g" pos_template.rviz >> "crazyflie_pos.rviz"
+sed "s/ROBOT_NAME/$1/g" ../rviz_template/pos_template.rviz >> "crazyflie_pos.rviz"
 
 exit 0

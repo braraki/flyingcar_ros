@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="name" />
+  <arg name="number" default="1" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+  <arg name="cf_num" default="0" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+  <arg name="frame" default="$(arg name)/base_link" />
+  <arg name="joy_dev" default="/dev/input/js0" />
+
+  <!-- Starts Crazyflie Server -->
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch" required="true">
+  </include>
+
+  <!-- Adds a Crazyflie and starts related nodes -->
+  <include file="$(find crazyflie_teleop)/launch/add_auto.launch">
+    <arg name="name" value="$(arg name)" />
+    <arg name="number" value="$(arg number)" />
+    <arg name="cf_num" value="$(arg cf_num)" />
+    <arg name="frame" value="$(arg frame)" />
+    <arg name="joy_dev" value="$(arg joy_dev)" />
+  </include>
+
+  <!-- Start optitrack -->
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+
+  <!-- Start RViz -->
+  <param name="robot_description" command="$(find xacro)/xacro.py $(find crazyflie_description)/urdf/crazyflie.urdf.xacro" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find crazyflie_teleop)/launch/rviz/crazyflie_pos.rviz" required="true" />
+
+</launch>

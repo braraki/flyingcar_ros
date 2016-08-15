@@ -11,7 +11,7 @@
 	  <include file="$(find crazyflie_teleop)/launch/ps3.launch">
 	  </include>
 
-	  <node name="crazyflie_demo_controller" pkg="crazyflie_teleop" type="controller.py" output="screen">
+	  <node name="crazyflie_demo_controller" pkg="crazyflie_teleop" type="ps3_controller.py" output="screen">
 	  </node>
    </group>
 

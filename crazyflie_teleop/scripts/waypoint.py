@@ -168,11 +168,8 @@ class WaypointNode:
 				self.goal_index = 0
 				
 				self.goal_lock.release()
-<<<<<<< HEAD
-			rospy.Rate(30)
-=======
+
 			r.sleep()
->>>>>>> e065bb50a2972cfb7c4b689fddb19c29b1e39d4b
 		return
 
 	def _change_goal(self):
