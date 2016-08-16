@@ -50,7 +50,7 @@ class wheel_controller:
 		self.theta_heading = 0
 		self.theta_error = 0
 
-		self.theta_offset_constant = 1.0
+		self.theta_offset_constant = 1.5
 		self.speed_offset_constant = 10
 
 		# margin of error
@@ -138,10 +138,10 @@ class wheel_controller:
 
 
 			self.theta_error = self.theta_heading - self.theta
-			if self.theta_error > 180.0:
-				self.theta_error -= 360.0
-			elif self.theta_error < -180:
-				self.theta_error += 360
+			if self.theta_error > math.pi:
+				self.theta_error -= 2*math.pi
+			elif self.theta_error < -math.pi:
+				self.theta_error += 2*math.pi
 			self.theta_offset = self.theta_error/math.pi * 170 * self.theta_offset_constant
 			#self.theta_offset = min(self.theta_offset, 85)
 			#self.theta_offset = max(self.theta_offset, -85)
