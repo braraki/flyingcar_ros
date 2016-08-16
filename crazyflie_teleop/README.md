@@ -7,7 +7,7 @@
 Starts the Crazyflie server, connects to mocap, starts RViz, and adds a Crazyflie. Parameters:
 	- name: the name of the Crazyflie, settings specified in `flyingcar_ros/crazyflie_driver/config/name.yaml`
 	- number: X where X is from Robot_X published by Optitrack associated with the Crazyflie you're connecting to
-	- cf_num: the index of the associated simulated crazyflie from the [planner]{https://github.com/braraki/flyingcar_vizplan} 
+	- cf_num: the index of the associated simulated crazyflie from the [planner](https://github.com/braraki/flyingcar_vizplan)
 
 `roslaunch crazyflie_teleop add_auto.launch  name:=<name> number:=<number> cf_num:=<cf_num>`
 

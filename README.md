@@ -15,6 +15,6 @@
 
 `crazyflie_tools` --- useful nodes and scripts
 
-For running autonomously, also get [the planner and simulator package]{http://github.com/braraki/flyingcar_vizplan}
+For running autonomously, also get [the planner and simulator package](http://github.com/braraki/flyingcar_vizplan)
 
-Based on the [crazyflie_ros package]{http://github.com/whoenig/crazyflie_ros} Thanks!
+Based on the [crazyflie_ros package](http://github.com/whoenig/crazyflie_ros) Thanks!
