@@ -11,7 +11,7 @@ from map_maker.srv import *
 from map_maker.msg import HiPathTime
 from nav_msgs.msg import Path
 from enum import Enum
-from map_maker import gen_adj_array_info_dict as infoDict
+from map_maker import map_maker_helper as map_helper
 
 #---------
 
@@ -38,7 +38,7 @@ class PathDisplay():
 
 		self.cf_num = cf_num
 
-		self.node_map = infoDict.map_maker_client('/send_complex_map')[0]
+		self.node_map = map_helper.map_maker_client('/send_complex_map')[0]
 
 		self.mkpath = MakePath(self.node_map, self.cf_num)
 

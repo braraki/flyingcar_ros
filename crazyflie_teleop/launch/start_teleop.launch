@@ -12,7 +12,7 @@
   <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
   </include>
 
-  <include file="$(find crazyflie_teleop)/launch/teleop_ps3.launch">
+  <include file="$(find crazyflie_teleop)/launch/add_teleop.launch">
     <arg name="name" value="$(arg name)" />
   </include>
 

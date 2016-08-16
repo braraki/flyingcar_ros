@@ -1,15 +1,20 @@
-ROS PACKAGE FOR CSAIL FLYINGCAR PROJECT
-B. Araki, S. Pohorecky, C. Qiu, J. Strang
+#flyingcar_ros
 
-To run the crazyflie with PS3 joystick control:
-```roslaunch crazyflie_teleop start_teleop.launch name:=<name>```
+##Flying Car Project --- CSAIL MIT --- DRL under Dr. D. Rus
+###B. Araki, S. Pohorecky, C. Qiu, J. Strang
 
-To add another flie to the teleop once running:
-```roslaunch crazyflie_teleop teleop_ps3.launch name:=<name>```
+`crazyflie_controller` --- flight controller
 
-Crazyflie YAML config files are contained in `crazyflie_driver/config`
+`crazyflie_cpp` --- cpp library for Crazyflie (includes radio communication and param set/get)
 
-To use Optitrack cameras for teleop, the mocap_optitrack and the robot_localization packages must be installed. To hover at a predefined location, run:
-```roslaunch crazyflie_teleop hover_mocap.launch name:=<name> x:=<x> y:=<y> z:=<z>```
+`crazyflie_description` --- urdf and RViz for Crazyflie
 
-Most of the crazyflie code modified from the crazyflie_ros package by W. Hoenig. Thanks!
+`crazyflie_driver` --- main server for multiple Crazyflies and routines for adding Crazyflies
+
+`crazyflie_teleop` --- controlling Crazyflies autonomously and with PS3 controller
+
+`crazyflie_tools` --- useful nodes and scripts
+
+For running autonomously, also get [the planner and simulator package]{http://github.com/braraki/flyingcar_vizplan}
+
+Based on the [crazyflie_ros package]{http://github.com/whoenig/crazyflie_ros} Thanks!

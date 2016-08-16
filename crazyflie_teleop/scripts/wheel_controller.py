@@ -162,7 +162,7 @@ class wheel_controller:
 			# rospy.set_param('wheels/pwm_2', max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255)))
 
 			# print max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)), max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255))
-			#print rospy.get_param('in_air')
+
 			if not rospy.get_param('in_air'):
 				if self.check_goal():
 					rospy.set_param('wheels/state', 0)

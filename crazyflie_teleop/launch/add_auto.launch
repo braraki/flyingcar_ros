@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="name" />
+  <arg name="number" default="1" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+  <arg name="cf_num" default="0" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+  <arg name="frame" default="$(arg name)/base_link" />
+  <arg name="joy_dev" default="/dev/input/js0" />
+
+  <group ns="$(arg name)">
+    <!-- Converts mocap Robot_X/pose into PoseWithCovarianceStamped to use with localization; Converts localization output into PoseStamped -->
+    <node name="pose_converter" type="pose_converter.py" pkg="crazyflie_tools" args="$(arg name) $(arg number)">
+    </node>
+
+    <!-- Localization node -->
+    <include file="$(find crazyflie_teleop)/launch/localization.launch">
+      <arg name="name" value="$(arg name)"/>
+    </include>
+
+    <!-- Adds a Crazyflie to server -->
+    <include file="$(find crazyflie_driver)/launch/crazyflie_add.launch">
+      <arg name="name" value="$(arg name)" />
+      <arg name="enable_logging" value="True" />
+    </include>
+
+    <!-- Starts Joystick (useful for e-stops) -->
+    <node name="joy" pkg="joy" type="joy_node" output="screen">
+      <param name="dev" value="$(arg joy_dev)" />
+    </node>
+
+    <!-- Start Joystick control node -->
+    <node name="joystick_controller" pkg="crazyflie_teleop" type="ps3_controller.py" output="screen"> 
+      <param name="use_crazyflie_controller" value="True" />
+    </node> 
+
+    <!-- Starts waypoint following node -->
+    <node name="waypoint_nav" pkg="crazyflie_teleop" type="waypoint.py" output="screen" args="$(arg cf_num)">
+    </node>
+
+    <!-- Starts wheel controller -->
+    <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number)">
+    </node>
+
+    <!-- Starts flight controller -->
+    <include file="$(find crazyflie_controller)/launch/crazyflie2.launch">
+      <arg name="frame" value="$(arg frame)" />
+    </include>
+
+    <!-- Starts path display for RViz -->
+    <!-- <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" args="$(number)">
+    </node> -->
+
+    <!-- Starts simulator desired path display for RViz -->
+    <node name="sim_path_display" pkg="crazyflie_tools" type="sim_path_display.py" output="screen" args="$(arg cf_num)" >
+    </node>
+
+    <!-- Makes base link for the Crazyflie the same as the base link for the mocap. -->
+    <node pkg="tf" type="static_transform_publisher" name="baselink_broadcaster" args="0 0 0 0 0 0 1 $(arg frame) /Robot_$(arg number)/pose 100" >
+    </node>
+  </group> 
+</launch>
