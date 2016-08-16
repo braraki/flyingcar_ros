@@ -189,7 +189,9 @@ class wheel_controller:
 					self._update_params(["wheels/pwm_2"])
 				except rospy.ServiceException as exc:
 					print("Service did not process request: " + str(exc))
-
+			else:
+				rospy.set_param('wheels/state',0)
+				self._update_params(["wheels/state"])
 			r.sleep()
 		rospy.set_param('wheels/state', 0)
 		self._update_params(["wheels/state"])
