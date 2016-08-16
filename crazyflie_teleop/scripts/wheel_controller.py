@@ -115,7 +115,7 @@ class wheel_controller:
 			return False
 
 	def wheel_command(self): #NTS could this be having bad timing interactions? It's completely possible that the goal updates during a runthrough.
-		r = rospy.Rate(3)
+		r = rospy.Rate(2)
 		while not rospy.is_shutdown():	#NTS if goals and positions/angles change while running, this could affect calculation? Add a lock to be safe?
 			# print "entering commander!"	# NTS A lock might also mess up the subscribers because of lag?
 			# calculate baseline
@@ -170,19 +170,31 @@ class wheel_controller:
 				else:
 					# pwm1 is on the right
 					# pwm 2 is on the left
-					rospy.set_param('wheels/state', 1) #NTS might need to mess with this
-					theta_percent = self.theta_offset/math.pi
 					pwm = max(0,min(self.baseline + self.speed_offset, 255))
-					#pwm_right = max(0,min(pwm*(1+theta_percent/8),255))
-					#pwm_left = max(0,min(pwm*(1-theta_percent/8),255))
-					pwm_right = max(0,min(pwm + self.theta_offset, 255))
-					pwm_left = max(0,min(pwm - self.theta_offset, 255))
-					rospy.set_param('wheels/pwm_1', pwm_right)
-					rospy.set_param('wheels/pwm_2', pwm_left)
+					print "theta error:" + str(self.theta_error)
+					if self.theta_error > math.pi/2.0:
+						#turn left (state 2)
+						rospy.set_param('wheels/state',2)
+						rospy.set_param('wheels/pwm_1', 30)
+						rospy.set_param('wheels/pwm_2', 30)
+					elif self.theta_error < -math.pi/2.0:
+						#turn right (state 3)
+						rospy.set_param('wheels/state',3)
+						rospy.set_param('wheels/pwm_1', 30)
+						rospy.set_param('wheels/pwm_2', 30)
+					else:
+						rospy.set_param('wheels/state', 1) #NTS might need to mess with this
+						theta_percent = self.theta_offset/math.pi
+						#pwm_right = max(0,min(pwm*(1+theta_percent/8),255))
+						#pwm_left = max(0,min(pwm*(1-theta_percent/8),255))
+						pwm_right = max(0,min(pwm + self.theta_offset, 255))
+						pwm_left = max(0,min(pwm - self.theta_offset, 255))
+						rospy.set_param('wheels/pwm_1', pwm_right)
+						rospy.set_param('wheels/pwm_2', pwm_left)
 
-					print "parameters updated!"
-					print self.theta_offset, self.speed_offset, self.baseline
-					print pwm_left, pwm_right
+						print "parameters updated!"
+						print self.theta_offset, self.speed_offset, self.baseline
+						print pwm_left, pwm_right
 				try:
 					self._update_params(["wheels/state"])
 					self._update_params(["wheels/pwm_1"])
