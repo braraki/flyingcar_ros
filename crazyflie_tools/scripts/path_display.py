@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+#Node for displaying Crazyflie's actual path 
+#author: Sarah Pohorecky - spohorec@mit.edu
+
 import rospy
 import tf
 import sys
@@ -14,7 +17,13 @@ class PathDisplay():
 	def __init__(self,in_topic,out_topic):
 		self.in_topic = in_topic
 		self.out_topic = out_topic
+
+		#--------------------------------------------------------
+
+		#Inits. Path message with a pose of (0,0,0,0,0,0,1)
+		#So publisher doesn't freak out with no data
 		self.init_pose = PoseStamped()
+
 		self.init_pose.header.seq = 0
 		self.init_pose.header.stamp = rospy.Time.now()
 		self.init_pose.header.frame_id = "/world"
@@ -30,12 +39,8 @@ class PathDisplay():
 		self.init_pose.pose.orientation.z = quaternion[2]
 		self.init_pose.pose.orientation.w = quaternion[3]
 
-		#--------------------------------------------------------
-
 		self.paths = []
 		self.paths.append(self.init_pose)
-
-		#--------------------------------------------------------		
 
 		self.msg = Path()
 
@@ -44,38 +49,31 @@ class PathDisplay():
 		self.msg.header.frame_id = "/world"
 		self.msg.poses.append(self.init_pose)
 
-		#print self.msg
-
 		#--------------------------------------------------------
 
 		rospy.Subscriber(self.in_topic,PoseStamped,self.make_path)
 
-
 		self.pub = rospy.Publisher(self.out_topic,Path,queue_size=10)
+
 		r = rospy.Rate(30)
 		while not rospy.is_shutdown():
 			self.pub_path()
 			r.sleep()
 
+	#Takes in pose data and adds it to the path
 	def make_path(self,data):
 		pose = PoseStamped()
 		pose.header = data.header
 		pose.pose = data.pose
 		self.msg.poses.append(data)
-		# if len(self.msg.poses) > 100:
-		# 	self.msg.poses.pop(0)
-
 
 	def pub_path(self):
 		self.msg.header.stamp = rospy.Time.now()
-		#self.msg.poses = self.paths
 		self.pub.publish(self.msg)
-		#print "published"
 
 if __name__ == '__main__':
 	rospy.init_node("path_display")
-	cf_num = sys.argv[1] 
-	display_pose = PathDisplay("/Robot_"+str(cf_num)+"/pose","path")
+	display_pose = PathDisplay("pose","path")
 	
 
 

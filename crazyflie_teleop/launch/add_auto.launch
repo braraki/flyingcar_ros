@@ -47,8 +47,8 @@
     </include>
 
     <!-- Starts path display for RViz -->
-    <!-- <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" args="$(number)">
-    </node> -->
+    <node name="path_display" pkg="crazyflie_tools" type="path_display.py" output="screen" >
+    </node>
 
     <!-- Starts simulator desired path display for RViz -->
     <node name="sim_path_display" pkg="crazyflie_tools" type="sim_path_display.py" output="screen" args="$(arg cf_num)" >
