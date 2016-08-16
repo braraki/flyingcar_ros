@@ -64,7 +64,11 @@ Visualization Manager:
           Value: true
       Name: RobotModel
       Robot Description: robot_description
+<<<<<<< HEAD
+      TF Prefix: gio
+=======
       TF Prefix: igo
+>>>>>>> 16d701fb395ebb220e68b442176ecab5a626f62f
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -80,7 +84,11 @@ Visualization Manager:
       Shaft Length: 0.1
       Shaft Radius: 0.02
       Shape: Arrow
+<<<<<<< HEAD
+      Topic: /gio/goal
+=======
       Topic: /igo/goal
+>>>>>>> 16d701fb395ebb220e68b442176ecab5a626f62f
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -95,7 +103,11 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
+<<<<<<< HEAD
+      Topic: /gio/path
+=======
       Topic: /igo/path
+>>>>>>> 16d701fb395ebb220e68b442176ecab5a626f62f
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -110,7 +122,11 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
+<<<<<<< HEAD
+      Topic: /gio/d_path
+=======
       Topic: /igo/d_path
+>>>>>>> 16d701fb395ebb220e68b442176ecab5a626f62f
       Unreliable: false
       Value: true 
   Enabled: true
