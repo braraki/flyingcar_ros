@@ -175,13 +175,13 @@ class wheel_controller:
 					if self.theta_error > math.pi/2.0:
 						#turn left (state 2)
 						rospy.set_param('wheels/state',2)
-						rospy.set_param('wheels/pwm_1', 50)
-						rospy.set_param('wheels/pwm_2', 50)
+						rospy.set_param('wheels/pwm_1', 60)
+						rospy.set_param('wheels/pwm_2', 60)
 					elif self.theta_error < -math.pi/2.0:
 						#turn right (state 3)
 						rospy.set_param('wheels/state',3)
-						rospy.set_param('wheels/pwm_1', 50)
-						rospy.set_param('wheels/pwm_2', 50)
+						rospy.set_param('wheels/pwm_1', 60)
+						rospy.set_param('wheels/pwm_2', 60)
 					else:
 						rospy.set_param('wheels/state', 1) #NTS might need to mess with this
 						theta_percent = self.theta_offset/math.pi
