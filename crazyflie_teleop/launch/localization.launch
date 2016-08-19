@@ -110,7 +110,7 @@
            integration of velocities leads to slowly increasing error in the absolute (pose) variable. For position variables,
            this is acceptable. For orientation variables, it can lead to trouble. Users should make sure that all orientation
            variables have at least one source of absolute measurement. -->
-      <param name="pose0_differential" value="true"/>
+      <param name="pose0_differential" value="false"/>
       <param name="pose1_differential" value="false"/>      
       <param name="imu0_differential" value="false"/>
 
