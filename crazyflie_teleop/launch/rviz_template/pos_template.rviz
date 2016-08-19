@@ -80,7 +80,7 @@ Visualization Manager:
       Shaft Length: 0.1
       Shaft Radius: 0.02
       Shape: Arrow
-      Topic: /ROBOT_NAME/goal
+      Topic: /ROBOT_NAME/flight_goal
       Unreliable: false
       Value: true
     - Alpha: 1
