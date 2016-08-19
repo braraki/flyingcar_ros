@@ -64,7 +64,7 @@ Visualization Manager:
           Value: true
       Name: RobotModel
       Robot Description: robot_description
-      TF Prefix: ace
+      TF Prefix: kal
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -80,7 +80,7 @@ Visualization Manager:
       Shaft Length: 0.1
       Shaft Radius: 0.02
       Shape: Arrow
-      Topic: /ace/goal
+      Topic: /kal/goal
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -95,7 +95,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /ace/path
+      Topic: /kal/path
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -110,7 +110,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Topic: /ace/d_path
+      Topic: /kal/d_path
       Unreliable: false
       Value: true 
   Enabled: true
