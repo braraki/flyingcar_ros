@@ -13,7 +13,7 @@ import sys
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 
-from map_maker.msg import HiPathTime
+from planner.msg import HiPathTime
 from map_maker import map_maker_helper as map_helper
 
 #---------

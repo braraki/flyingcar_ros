@@ -259,7 +259,7 @@ int main(int argc, char **argv)
   std::string frame;
   n.getParam("frame", frame);
   double frequency;
-  n.param("frequency", frequency, 50.0);
+  n.param("frequency", frequency, 80.0);
 
   Controller controller(worldFrame, frame, n);
   controller.run(frequency);

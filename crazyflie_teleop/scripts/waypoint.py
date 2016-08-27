@@ -24,7 +24,7 @@ from std_srvs.srv import Empty
 
 from crazyflie_driver.srv import UpdateParams
 
-from map_maker.msg import HiPathTime
+from planner.msg import HiPathTime
 from crazyflie_teleop.msg import DriveCmd
 
 from map_maker import map_maker_helper as map_helper
@@ -97,6 +97,11 @@ class WaypointNode:
 		self.goal_t = 0
 		self.goal_type = 'None'
 
+		self.next_goal_x = 0
+		self.next_goal_y = 0
+		self.next_goal_z = 0
+		self.next_goal_t = 0
+
 		#-----------------------------------
 
 		#defines goal message
@@ -117,6 +122,9 @@ class WaypointNode:
 		self.drive_msg.x = 0
 		self.drive_msg.y = 0
 		self.drive_msg.t = rospy.Time.now()
+		self.drive_msg.x2 = 0
+		self.drive_msg.y2 = 0
+		self.drive_msg.t2 = rospy.Time.now()
 
 		#-----------------------------------
 
@@ -130,6 +138,7 @@ class WaypointNode:
 		#Publisher for goals
 		self.flight_goal_pub = rospy.Publisher("flight_goal",PoseStamped, queue_size=1) #NTS Namespace
 		self.drive_goal_pub = rospy.Publisher("drive_goal",DriveCmd, queue_size=1) #NTS Namespace
+		self.drive_next_goal_pub = rospy.Publisher("drive_next_goal",DriveCmd, queue_size=1) #NTS Namespace
 
 		#-----------------------------------
 
@@ -181,6 +190,25 @@ class WaypointNode:
 				self.goal_z = new_goal[0][2]
 				self.goal_t = new_goal[1]
 				self.goal_type = new_goal[2]
+
+				if self.goal_index < len(self.cf_path):
+					next_goal = self.cf_path[self.goal_index + 1]
+					if not map_helper.is_air(next_goal[2]):
+						self.next_goal_x = next_goal[0][0]
+						self.next_goal_y = next_goal[0][1]
+						self.next_goal_z = next_goal[0][2]
+						self.next_goal_t = next_goal[1]
+					else:
+						self.next_goal_x = self.goal_x
+						self.next_goal_y = self.goal_y
+						self.next_goal_z = self.goal_z
+						self.next_goal_t = self.goal_t
+				else:
+					self.next_goal_x = self.goal_x
+					self.next_goal_y = self.goal_y
+					self.next_goal_z = self.goal_z
+					self.next_goal_t = self.goal_t
+
 			except:
 				pass
 			self.goal_index += 1
@@ -208,7 +236,12 @@ class WaypointNode:
 			self.drive_msg.y = self.goal_y
 			self.drive_msg.t = rospy.Time.from_sec(self.goal_t)
 
+			self.drive_msg.x2 = self.next_goal_x
+			self.drive_msg.y2 = self.next_goal_y
+			self.drive_msg.t2 = rospy.Time.from_sec(self.next_goal_t)
+
 			self.drive_goal_pub.publish(self.drive_msg)
+
 			r.sleep()
 		return
 		

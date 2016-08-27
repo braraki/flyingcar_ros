@@ -37,6 +37,9 @@ class wheel_controller:
 		self.goal_y = 0
 		self.goal_speed = 0
 		self.goal_t = 0
+		self.next_x = 0
+		self.next_y = 0
+		self.next_t = 0
 
 		self.prev_goal_x = 0
 		self.prev_goal_y = 0
@@ -50,7 +53,7 @@ class wheel_controller:
 		self.theta_heading = 0
 		self.theta_error = 0
 
-		self.theta_offset_constant = 1.5
+		self.theta_offset_constant = 2.0
 		self.speed_offset_constant = 10
 
 		# margin of error
@@ -74,6 +77,10 @@ class wheel_controller:
 		self.goal_y = data.y
 		self.goal_t = float(data.t.secs+data.t.nsecs*10**(-9))
 
+		self.next_x = data.x2
+		self.next_y = data.y2
+		self.next_t = float(data.t2.secs+data.t.nsecs*10**(-9))
+
 		#print self.goal_x, self.goal_y
 
 
@@ -95,7 +102,10 @@ class wheel_controller:
 			self.x = data.pose.position.x
 			self.y = data.pose.position.y
 			q = (data.pose.orientation.x,data.pose.orientation.y,data.pose.orientation.z,data.pose.orientation.w)
-			self.theta = tf.transformations.euler_from_quaternion(q)[2]
+			self.theta = tf.transformations.euler_from_quaternion(q)[2] - math.pi/2.0
+
+
+			print "yaw: " + str(180.0*self.theta/math.pi)
 
 			update_time = data.header.stamp.nsecs
 
@@ -125,8 +135,13 @@ class wheel_controller:
 			self.baseline = int(self.baseline)
 
 			# calculate theta offset
-			x_e = self.goal_x - self.x
-			y_e = self.goal_y - self.y
+			x_e = self.next_x - self.x
+			y_e = self.next_y - self.y
+
+			distance_to_goal = math.sqrt((self.x-self.goal_x)**2 + (self.y-self.goal_y)**2)
+			distance_constant = 1.0
+			if distance_to_goal < 0.1:
+				distance_constant = distance_to_goal*10;
 
 			if x_e == 0:
 				if y_e > 0:
@@ -172,12 +187,12 @@ class wheel_controller:
 					# pwm 2 is on the left
 					pwm = max(0,min(self.baseline + self.speed_offset, 255))
 					print "theta error:" + str(self.theta_error)
-					if self.theta_error > math.pi/2.0:
+					if self.theta_error > math.pi/3.0:
 						#turn left (state 2)
 						rospy.set_param('wheels/state',2)
 						rospy.set_param('wheels/pwm_1', 60)
 						rospy.set_param('wheels/pwm_2', 60)
-					elif self.theta_error < -math.pi/2.0:
+					elif self.theta_error < -math.pi/3.0:
 						#turn right (state 3)
 						rospy.set_param('wheels/state',3)
 						rospy.set_param('wheels/pwm_1', 60)
@@ -187,8 +202,8 @@ class wheel_controller:
 						theta_percent = self.theta_offset/math.pi
 						#pwm_right = max(0,min(pwm*(1+theta_percent/8),255))
 						#pwm_left = max(0,min(pwm*(1-theta_percent/8),255))
-						pwm_right = max(0,min(pwm + self.theta_offset, 255))
-						pwm_left = max(0,min(pwm - self.theta_offset, 255))
+						pwm_right = max(0,min(distance_constant*(pwm + self.theta_offset), 255))
+						pwm_left = max(0,min(distance_constant*(pwm - self.theta_offset), 255))
 						rospy.set_param('wheels/pwm_1', pwm_right)
 						rospy.set_param('wheels/pwm_2', pwm_left)
 
@@ -214,4 +229,4 @@ if __name__ == '__main__':
 	rospy.init_node('wheel_control')
 	cf_num = sys.argv[1]
 	wheel_ctrl = wheel_controller(cf_num)
-	rospy.spin()
+#	rospy.spin()

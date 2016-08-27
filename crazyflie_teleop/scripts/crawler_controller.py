@@ -174,8 +174,7 @@ class CrawlerController:
 if __name__ == "__main__":
 	rospy.init_node("crawler",anonymous=True)
 	ctrl = CrawlerController()
-	while not rospy.is_shutdown():
-		rospy.spin()
+	rospy.spin()
 
 
 

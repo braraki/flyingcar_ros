@@ -7,7 +7,7 @@ class Selector():
 	def __init__(self):
 		self.current_cf = 0
 		self.crazyflies = rospy.get_param('cf_list').keys()
-
+		self.relay = rospy.Publisher(current_joy,Joy,queue_size=10)
 		rospy.Subscriber('joy', Joy, self.relay_joy_ctrl)
 
 
@@ -18,8 +18,8 @@ class Selector():
 			if self.current_cf == len(self.crazyflies):
 				self.current_cf=0
 		current_joy=self.crazyflies[self.current_cf]+'/joy'
-		relay = rospy.Publisher(current_joy,Joy,queue_size=10)
-		relay.publish(joy_data)
+		
+		self.relay.publish(joy_data)
 
 
 if __name__ == '__main__':
