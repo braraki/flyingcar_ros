@@ -3,7 +3,9 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
 from crazyflie_teleop.msg import DriveCmd
+from crazyflie_teleop.msg import WheelParams
 from crazyflie_driver.srv import UpdateParams
 from std_srvs.srv import Empty
 import math
@@ -14,14 +16,16 @@ import time
 
 class wheel_controller:
 
-	def __init__(self, cf_num):
-		rospy.wait_for_service('update_params')
-		rospy.loginfo("found update_params service")
-		self._update_params = rospy.ServiceProxy('update_params', UpdateParams)
+	def __init__(self, cf_num, name):
+		#rospy.wait_for_service('update_params')
+		#rospy.loginfo("found update_params service")
+		#self._update_params = rospy.ServiceProxy('update_params', UpdateParams)
+		self.param_pub = rospy.Publisher('/update_params', WheelParams, queue_size=10)
 
 		rospy.set_param('in_air', False)
 
 		self.cf_num = cf_num
+		self.name = name
 
 		self.x = 0
 		self.y = 0
@@ -32,6 +36,9 @@ class wheel_controller:
 		self.speed = 0
 		self.prev_update_time = 0
 
+		self.vel_x = 0
+		self.vel_y = 0
+
 		# goals
 		self.goal_x = 0
 		self.goal_y = 0
@@ -40,10 +47,6 @@ class wheel_controller:
 		self.next_x = 0
 		self.next_y = 0
 		self.next_t = 0
-
-		self.prev_goal_x = 0
-		self.prev_goal_y = 0
-		self.prev_goal_t = 0
 
 		# controls
 		self.baseline = 0
@@ -57,10 +60,10 @@ class wheel_controller:
 		self.speed_offset_constant = 10
 
 		# margin of error
-		self.pos_error = 0.03
+		self.pos_error = 0.01
 
 		rospy.Subscriber("drive_goal", DriveCmd, self.update_goal)
-		rospy.Subscriber("pose", PoseStamped, self.update_position)
+		rospy.Subscriber("pose_localization", Odometry, self.update_position)
 		self.wheel_command()
 
 		# ctrl_thread = threading.Thread(target=self.wheel_command)
@@ -68,11 +71,6 @@ class wheel_controller:
 		# ctrl_thread.start()
 
 	def update_goal(self, data):
-		if self.goal_x != data.x or self.goal_y != data.y or self.goal_t != float(data.t.secs+data.t.nsecs*10**(-9)):
-			#print "Goal has changed!"
-			self.prev_goal_x = self.goal_x
-			self.prev_goal_y = self.goal_y
-			self.prev_goal_t = self.goal_t
 		self.goal_x = data.x
 		self.goal_y = data.y
 		self.goal_t = float(data.t.secs+data.t.nsecs*10**(-9))
@@ -81,41 +79,22 @@ class wheel_controller:
 		self.next_y = data.y2
 		self.next_t = float(data.t2.secs+data.t.nsecs*10**(-9))
 
-		#print self.goal_x, self.goal_y
+		#print "goal:" + str(self.goal_x) + " | " + str(self.goal_y)
 
+		self.goal_speed = math.sqrt((self.goal_x-self.x)**2+(self.goal_y-self.y)**2)/float(self.goal_t-time.time())
 
-		try:
-			self.goal_speed = math.sqrt((self.goal_x-self.x)**2+(self.goal_y-self.y)**2)/float(self.goal_t-time.time())
-			#self.goal_speed = math.sqrt((self.goal_x-self.prev_goal_x)**2+(self.goal_y-self.prev_goal_y)**2)/float(self.goal_t-self.prev_goal_t)
-			#self.goal_speed = math.sqrt((self.goal_x-self.x)**2+(self.goal_y-self.y)**2)/float(self.goal_t-self.prev_goal_t) * 10**9 #time.time())
-		except:
-			pass
 		#print self.goal_speed
 		#print float(self.goal_t-rospy.Time.now().nsecs)
 		#print self.goal_t, self.prev_goal_t
 
 	def update_position(self,data):
-		if self.x != data.pose.position.x or self.y != data.pose.position.y:
-			prev_x = self.x
-			prev_y = self.y
-
-			self.x = data.pose.position.x
-			self.y = data.pose.position.y
-			q = (data.pose.orientation.x,data.pose.orientation.y,data.pose.orientation.z,data.pose.orientation.w)
+			self.x = data.pose.pose.position.x
+			self.y = data.pose.pose.position.y
+			q = (data.pose.pose.orientation.x,data.pose.pose.orientation.y,data.pose.pose.orientation.z,data.pose.pose.orientation.w)
 			self.theta = tf.transformations.euler_from_quaternion(q)[2] - math.pi/2.0
 
-
-			print "yaw: " + str(180.0*self.theta/math.pi)
-
-			update_time = data.header.stamp.nsecs
-
-			speed = math.sqrt((self.x-prev_x)**2 + (self.y-prev_y)**2)/(update_time-self.prev_update_time) * 10**9
-
-			if len(self.prev_speeds) == 10: #NTS Potential threading issue
-				del self.prev_speeds[0]
-
-			self.prev_speeds.append(speed)
-			self.prev_update_time = update_time
+			self.vel_x = data.twist.twist.linear.x
+			self.vel_y = data.twist.twist.linear.y
 
 
 	def check_goal(self):
@@ -125,11 +104,11 @@ class wheel_controller:
 			return False
 
 	def wheel_command(self): #NTS could this be having bad timing interactions? It's completely possible that the goal updates during a runthrough.
-		r = rospy.Rate(2)
+		r = rospy.Rate(30)
 		while not rospy.is_shutdown():	#NTS if goals and positions/angles change while running, this could affect calculation? Add a lock to be safe?
 			# print "entering commander!"	# NTS A lock might also mess up the subscribers because of lag?
 			# calculate baseline
-			self.baseline = (self.goal_speed + 0.0092033)/0.00084351
+			self.baseline = (self.goal_speed + 0.0092033)/0.001
 			self.baseline = min(255, self.baseline)
 			self.baseline = max(0, self.baseline)
 			self.baseline = int(self.baseline)
@@ -140,8 +119,8 @@ class wheel_controller:
 
 			distance_to_goal = math.sqrt((self.x-self.goal_x)**2 + (self.y-self.goal_y)**2)
 			distance_constant = 1.0
-			if distance_to_goal < 0.1:
-				distance_constant = distance_to_goal*10;
+			if distance_to_goal < 0.15:
+				distance_constant = distance_to_goal/0.15;
 
 			if x_e == 0:
 				if y_e > 0:
@@ -162,10 +141,12 @@ class wheel_controller:
 			#self.theta_offset = max(self.theta_offset, -85)
 			self.theta_offset = int(self.theta_offset)
 
-			print x_e, y_e, self.theta_error*180/math.pi
+			#print x_e, y_e, self.theta_error*180/math.pi
 
 			# calculate speed offset
-			self.speed = float(sum(self.prev_speeds))/len(self.prev_speeds) if len (self.prev_speeds) > 0 else 0
+			self.speed = math.sqrt(self.vel_x**2 + self.vel_y**2)
+			#print "speed: " + str(self.speed)
+			#print "yaw: " + str(180.0*self.theta/math.pi)
 			#print self.speed, self.goal_speed
 			speed_error = self.goal_speed - self.speed
 
@@ -179,54 +160,74 @@ class wheel_controller:
 			# print max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)), max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255))
 
 			if not rospy.get_param('in_air'):
+				wheel_params = WheelParams()
+				wheel_params.tf_prefix = self.name
 				if self.check_goal():
-					rospy.set_param('wheels/state', 0)
-					print "state set to 0."
+					state = 0
+					pwm1 = 0
+					pwm2 = 0
+					#rospy.set_param('wheels/state', 0)
+					#print "state set to 0."
 				else:
 					# pwm1 is on the right
 					# pwm 2 is on the left
 					pwm = max(0,min(self.baseline + self.speed_offset, 255))
-					print "theta error:" + str(self.theta_error)
+					#print "theta error:" + str(self.theta_error)
 					if self.theta_error > math.pi/3.0:
+						#print "turning left"
 						#turn left (state 2)
-						rospy.set_param('wheels/state',2)
-						rospy.set_param('wheels/pwm_1', 60)
-						rospy.set_param('wheels/pwm_2', 60)
+						state = 2
+						pwm1 = 70
+						pwm2 = 70
+						#rospy.set_param('wheels/state',2)
+						#rospy.set_param('wheels/pwm_1', 70)
+						#rospy.set_param('wheels/pwm_2', 70)
 					elif self.theta_error < -math.pi/3.0:
 						#turn right (state 3)
-						rospy.set_param('wheels/state',3)
-						rospy.set_param('wheels/pwm_1', 60)
-						rospy.set_param('wheels/pwm_2', 60)
+						#print "turning right"
+						state = 3
+						pwm1 = 70
+						pwm2 = 70
+						#rospy.set_param('wheels/state',3)
+						#rospy.set_param('wheels/pwm_1', 70)
+						#rospy.set_param('wheels/pwm_2', 70)
 					else:
-						rospy.set_param('wheels/state', 1) #NTS might need to mess with this
+						#rospy.set_param('wheels/state', 1) #NTS might need to mess with this
 						theta_percent = self.theta_offset/math.pi
 						#pwm_right = max(0,min(pwm*(1+theta_percent/8),255))
 						#pwm_left = max(0,min(pwm*(1-theta_percent/8),255))
 						pwm_right = max(0,min(distance_constant*(pwm + self.theta_offset), 255))
 						pwm_left = max(0,min(distance_constant*(pwm - self.theta_offset), 255))
-						rospy.set_param('wheels/pwm_1', pwm_right)
-						rospy.set_param('wheels/pwm_2', pwm_left)
-
-						print "parameters updated!"
-						print self.theta_offset, self.speed_offset, self.baseline
-						print pwm_left, pwm_right
-				try:
-					self._update_params(["wheels/state"])
-					self._update_params(["wheels/pwm_1"])
-					self._update_params(["wheels/pwm_2"])
-				except rospy.ServiceException as exc:
-					print("Service did not process request: " + str(exc))
-			else:
-				rospy.set_param('wheels/state',0)
-				self._update_params(["wheels/state"])
+						#rospy.set_param('wheels/pwm_1', pwm_right)
+						#rospy.set_param('wheels/pwm_2', pwm_left)
+						state = 1
+						pwm1 = pwm_right
+						pwm2 = pwm_left
+						#print "parameters updated!"
+						#print self.theta_offset, self.speed_offset, self.baseline
+						#print pwm_left, pwm_right
+				wheel_params.state = state
+				wheel_params.pwm1 = pwm1
+				wheel_params.pwm2 = pwm2
+				self.param_pub.publish(wheel_params)
+				#try:
+					#self._update_params(["wheels/state"])
+					#self._update_params(["wheels/pwm_1"])
+					#self._update_params(["wheels/pwm_2"])
+				#except rospy.ServiceException as exc:
+					#print("Service did not process request: " + str(exc))
+			#else:
+				#rospy.set_param('wheels/state',0)
+				#self._update_params(["wheels/state"])
 			r.sleep()
-		rospy.set_param('wheels/state', 0)
-		self._update_params(["wheels/state"])
+		#rospy.set_param('wheels/state', 0)
+		#self._update_params(["wheels/state"])
 		return
 
 
 if __name__ == '__main__':
 	rospy.init_node('wheel_control')
 	cf_num = sys.argv[1]
-	wheel_ctrl = wheel_controller(cf_num)
-#	rospy.spin()
+	name = sys.argv[2]
+	wheel_ctrl = wheel_controller(cf_num,name)
+	rospy.spin()

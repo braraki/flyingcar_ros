@@ -40,7 +40,7 @@
     </node>
 
     <!-- Starts wheel controller -->
-    <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number)">
+    <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number) $(arg name)">
     </node>
 
     <!-- Starts flight controller -->

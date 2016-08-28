@@ -132,6 +132,7 @@ private:
   template<class T, class U>
   void updateParam(uint8_t id, const std::string& ros_param) {
       U value;
+
       ros::param::get(ros_param, value);
       m_cf.setParam<T>(id, (T)value);
   }
@@ -147,7 +148,7 @@ private:
       std::string group(p.begin(), p.begin() + pos);
       std::string name(p.begin() + pos + 1, p.end());
 
-      //ROS_INFO("group: %s; name: %s",group.c_str(),name.c_str());
+      ROS_INFO("group: %s; name: %s, prefix: %s",group.c_str(),name.c_str(),m_tf_prefix.c_str());
 
       auto entry = m_cf.getParamTocEntry(group, name);
 

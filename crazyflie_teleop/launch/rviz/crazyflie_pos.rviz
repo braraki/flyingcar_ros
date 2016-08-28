@@ -5,6 +5,10 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Path1
+        - /Path2
+        - /Path3
+        - /Path4
+        - /Pose2
       Splitter Ratio: 0.617241
     Tree Height: 689
   - Class: rviz/Selection
@@ -81,7 +85,6 @@ Visualization Manager:
       Shaft Radius: 0.02
       Shape: Arrow
       Topic: /bug/flight_goal
-      Unreliable: false
       Value: true
     - Alpha: 1
       Buffer Length: 1
@@ -96,7 +99,6 @@ Visualization Manager:
         Y: 0
         Z: 0
       Topic: /bug/path
-      Unreliable: false
       Value: true
     - Alpha: 1
       Buffer Length: 1
@@ -111,8 +113,70 @@ Visualization Manager:
         Y: 0
         Z: 0
       Topic: /bug/d_path
-      Unreliable: false
-      Value: true 
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: gio
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic: /gio/path
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 0; 0; 255
+      Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic: /gio/d_path
+      Value: true
+    - Alpha: 0.5
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.1
+      Head Radius: 0.05
+      Name: Pose
+      Shaft Length: 0.1
+      Shaft Radius: 0.02
+      Shape: Arrow
+      Topic: /gio/flight_goal
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -137,7 +201,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.66686
+      Distance: 8.16359
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -149,10 +213,10 @@ Visualization Manager:
         Z: 0.145126
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.550398
+      Pitch: 0.510398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.19541
+      Yaw: 3.17041
     Saved: ~
 Window Geometry:
   Displays:
@@ -170,5 +234,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1481
-  X: 61
-  Y: 14
+  X: 414
+  Y: 15

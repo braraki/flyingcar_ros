@@ -138,7 +138,6 @@ class WaypointNode:
 		#Publisher for goals
 		self.flight_goal_pub = rospy.Publisher("flight_goal",PoseStamped, queue_size=1) #NTS Namespace
 		self.drive_goal_pub = rospy.Publisher("drive_goal",DriveCmd, queue_size=1) #NTS Namespace
-		self.drive_next_goal_pub = rospy.Publisher("drive_next_goal",DriveCmd, queue_size=1) #NTS Namespace
 
 		#-----------------------------------
 
@@ -191,8 +190,8 @@ class WaypointNode:
 				self.goal_t = new_goal[1]
 				self.goal_type = new_goal[2]
 
-				if self.goal_index < len(self.cf_path):
-					next_goal = self.cf_path[self.goal_index + 1]
+				if self.goal_index < len(self.cf_path) - 1:
+					next_goal = self.cf_path[self.goal_index + 2]
 					if not map_helper.is_air(next_goal[2]):
 						self.next_goal_x = next_goal[0][0]
 						self.next_goal_y = next_goal[0][1]

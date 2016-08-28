@@ -48,6 +48,7 @@ catkin_python_setup()
 add_message_files(
   FILES
   DriveCmd.msg
+  WheelParams.msg
 )
 
 ## Generate services in the 'srv' folder
