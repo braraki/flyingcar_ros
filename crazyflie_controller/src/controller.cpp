@@ -131,7 +131,7 @@ private:
     void pidReset()
     {
         m_pidX.reset();
-        m_pidZ.reset();
+        m_pidY.reset();
         m_pidZ.reset();
         m_pidYaw.reset();
     }

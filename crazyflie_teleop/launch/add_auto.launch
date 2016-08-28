@@ -57,7 +57,7 @@
     </node>
 
     <!-- Makes base link for the Crazyflie the same as the base link for the mocap. -->
-    <node pkg="tf" type="static_transform_publisher" name="baselink_broadcaster" args="0 0 0 0 0 0 1  /vicon/CF$(arg number)/CF$(arg number) $(arg frame) 100" >
+    <node pkg="tf" type="static_transform_publisher" name="baselink_broadcaster" args="0 0 0 -1.5708 0 0  /vicon/CF$(arg number)/CF$(arg number) $(arg frame) 10" >
     </node>
   </group> 
 </launch>

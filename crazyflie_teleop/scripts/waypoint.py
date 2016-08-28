@@ -216,13 +216,28 @@ class WaypointNode:
 
 	def _publish_flight_goal(self):
 		r = rospy.Rate(30)
+		air_x = 0.0
+		air_y = 0.0
+		air_z = 0.0
 		while not rospy.is_shutdown():
 			self.flight_msg.header.stamp = rospy.Time.now()
 			self.flight_msg.header.frame_id = "/world"
 
+			# if self.goal_z < 1.0:
 			self.flight_msg.pose.position.x = self.goal_x
 			self.flight_msg.pose.position.y = self.goal_y
 			self.flight_msg.pose.position.z = self.goal_z
+			# elif air_z == 0.0:
+			# 	air_z = np.float64(self.goal_z)
+			# 	air_x = np.float64(self.goal_x)
+			# 	air_y = np.float64(self.goal_y)
+			# 	self.flight_msg.pose.position.x = self.goal_x
+			# 	self.flight_msg.pose.position.y = self.goal_y
+			# 	self.flight_msg.pose.position.z = self.goal_z
+			# else:
+			# 	self.flight_msg.pose.position.x = air_x
+			# 	self.flight_msg.pose.position.y = air_y
+			# 	self.flight_msg.pose.position.z = air_z
 
 			self.flight_goal_pub.publish(self.flight_msg)
 			r.sleep()

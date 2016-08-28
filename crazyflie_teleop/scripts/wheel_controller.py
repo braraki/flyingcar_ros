@@ -92,6 +92,10 @@ class wheel_controller:
 			self.y = data.pose.pose.position.y
 			q = (data.pose.pose.orientation.x,data.pose.pose.orientation.y,data.pose.pose.orientation.z,data.pose.pose.orientation.w)
 			self.theta = tf.transformations.euler_from_quaternion(q)[2] - math.pi/2.0
+			if self.theta < -math.pi:
+				self.theta = self.theta + 2*math.pi
+
+			print "yaw: " + str(180*self.theta/math.pi)
 
 			self.vel_x = data.twist.twist.linear.x
 			self.vel_y = data.twist.twist.linear.y
@@ -153,21 +157,14 @@ class wheel_controller:
 			self.speed_offset = speed_error * self.speed_offset_constant
 			self.speed_offset = int(self.speed_offset)
 
-			# rospy.set_param('wheels/state', 1) #NTS might need to mess with this
-			# rospy.set_param('wheels/pwm_1', max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)))
-			# rospy.set_param('wheels/pwm_2', max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255)))
-
 			# print max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)), max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255))
-
+			wheel_params = WheelParams()
+			wheel_params.tf_prefix = self.name
 			if not rospy.get_param('in_air'):
-				wheel_params = WheelParams()
-				wheel_params.tf_prefix = self.name
 				if self.check_goal():
 					state = 0
 					pwm1 = 0
 					pwm2 = 0
-					#rospy.set_param('wheels/state', 0)
-					#print "state set to 0."
 				else:
 					# pwm1 is on the right
 					# pwm 2 is on the left
@@ -179,49 +176,32 @@ class wheel_controller:
 						state = 2
 						pwm1 = 70
 						pwm2 = 70
-						#rospy.set_param('wheels/state',2)
-						#rospy.set_param('wheels/pwm_1', 70)
-						#rospy.set_param('wheels/pwm_2', 70)
 					elif self.theta_error < -math.pi/3.0:
 						#turn right (state 3)
 						#print "turning right"
 						state = 3
 						pwm1 = 70
 						pwm2 = 70
-						#rospy.set_param('wheels/state',3)
-						#rospy.set_param('wheels/pwm_1', 70)
-						#rospy.set_param('wheels/pwm_2', 70)
 					else:
-						#rospy.set_param('wheels/state', 1) #NTS might need to mess with this
 						theta_percent = self.theta_offset/math.pi
-						#pwm_right = max(0,min(pwm*(1+theta_percent/8),255))
-						#pwm_left = max(0,min(pwm*(1-theta_percent/8),255))
 						pwm_right = max(0,min(distance_constant*(pwm + self.theta_offset), 255))
 						pwm_left = max(0,min(distance_constant*(pwm - self.theta_offset), 255))
-						#rospy.set_param('wheels/pwm_1', pwm_right)
-						#rospy.set_param('wheels/pwm_2', pwm_left)
 						state = 1
 						pwm1 = pwm_right
 						pwm2 = pwm_left
 						#print "parameters updated!"
 						#print self.theta_offset, self.speed_offset, self.baseline
 						#print pwm_left, pwm_right
-				wheel_params.state = state
-				wheel_params.pwm1 = pwm1
-				wheel_params.pwm2 = pwm2
-				self.param_pub.publish(wheel_params)
-				#try:
-					#self._update_params(["wheels/state"])
-					#self._update_params(["wheels/pwm_1"])
-					#self._update_params(["wheels/pwm_2"])
-				#except rospy.ServiceException as exc:
-					#print("Service did not process request: " + str(exc))
-			#else:
-				#rospy.set_param('wheels/state',0)
-				#self._update_params(["wheels/state"])
+			else:
+				state = 0
+				pwm1 = 0
+				pwm2 = 0
+
+			wheel_params.state = state
+			wheel_params.pwm1 = pwm1
+			wheel_params.pwm2 = pwm2
+			self.param_pub.publish(wheel_params)
 			r.sleep()
-		#rospy.set_param('wheels/state', 0)
-		#self._update_params(["wheels/state"])
 		return
 
 
