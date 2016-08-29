@@ -37,6 +37,7 @@ class WheelSwitchNode:
 			self.cfs[name] = CF(data.state,data.pwm1,data.pwm2)
 			cf_name = name[4:]
 			rospy.wait_for_service(cf_name + '/update_params')
+			print(":SLKJDF:IEJFESIUFHs")
 			rospy.loginfo("found update_params service")
 			self.update_services[name] = rospy.ServiceProxy(cf_name + '/update_params', UpdateParams)
 
