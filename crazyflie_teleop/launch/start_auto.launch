@@ -4,29 +4,23 @@
   <arg name="name" />
   <arg name="number" default="1" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
   <arg name="cf_num" default="0" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+  <arg name="frame" default="$(arg name)/base_link" />
   <arg name="joy_dev" default="/dev/input/js0" />
-  <arg name="channel" default="80" />
-  <arg name="frame" default="c$(arg channel)/$(arg name)/base_link" />
 
+  <!-- Starts Crazyflie Server -->
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
 
-  <group ns="c$(arg channel)">
-    <!-- Starts Crazyflie Server -->
-    <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
-    </include>
+  <node name="wheel_switch_node" pkg="crazyflie_teleop" type="wheel_switch_node.py" output="screen" />
 
-    <node name="wheel_switch_node" pkg="crazyflie_teleop" type="wheel_switch_node.py" output="screen" />
-  </group>
-
-    <!-- Adds a Crazyflie and starts related nodes -->
-    <include file="$(find crazyflie_teleop)/launch/add_auto.launch">
-      <arg name="name" value="$(arg name)" />
-      <arg name="number" value="$(arg number)" />
-      <arg name="cf_num" value="$(arg cf_num)" />
-      <arg name="frame" value="$(arg frame)" />
-      <arg name="joy_dev" value="$(arg joy_dev)" />
-    </include>
-
-
+  <!-- Adds a Crazyflie and starts related nodes -->
+  <include file="$(find crazyflie_teleop)/launch/add_auto.launch">
+    <arg name="name" value="$(arg name)" />
+    <arg name="number" value="$(arg number)" />
+    <arg name="cf_num" value="$(arg cf_num)" />
+    <arg name="frame" value="$(arg frame)" />
+    <arg name="joy_dev" value="$(arg joy_dev)" />
+  </include>
 
   <!-- Start optitrack -->
 <!--   <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
