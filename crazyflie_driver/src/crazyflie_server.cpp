@@ -31,6 +31,7 @@ class CrazyflieROS
 public:
   CrazyflieROS(
     const std::string& link_uri,
+    const std::string& channel,
     const std::string& tf_prefix,
     float roll_trim,
     float pitch_trim,
@@ -44,6 +45,7 @@ public:
     bool enable_logging_pressure,
     bool enable_logging_battery)
     : m_cf(link_uri)
+    , m_channel(channel)
     , m_tf_prefix(tf_prefix)
     , m_isEmergency(false)
     , m_roll_trim(roll_trim)
@@ -143,7 +145,7 @@ private:
   {
     //ROS_INFO("Update parameters");
     for (auto&& p : req.params) {
-      std::string ros_param = "/" + m_tf_prefix + "/" + p;
+      std::string ros_param = "/c" + m_channel + "/" + m_tf_prefix + "/" + p;
       size_t pos = p.find("/");
       std::string group(p.begin(), p.begin() + pos);
       std::string name(p.begin() + pos + 1, p.end());
@@ -439,6 +441,7 @@ private:
 private:
   Crazyflie m_cf;
   std::string m_tf_prefix;
+  std::string m_channel;
   bool m_isEmergency;
   float m_roll_trim;
   float m_pitch_trim;
@@ -482,6 +485,7 @@ bool add_crazyflie(
   // Leak intentionally
   CrazyflieROS* cf = new CrazyflieROS(
     req.uri,
+    req.channel,
     req.tf_prefix,
     req.roll_trim,
     req.pitch_trim,

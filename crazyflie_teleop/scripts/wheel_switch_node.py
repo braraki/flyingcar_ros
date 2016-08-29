@@ -20,7 +20,7 @@ class CF:
 class WheelSwitchNode:
 
 	def __init__(self):
-		rospy.Subscriber("/update_params", WheelParams, self.new_param)
+		rospy.Subscriber("update_params", WheelParams, self.new_param)
 
 		self.cfs = {}
 		self.update_services = {}
@@ -35,28 +35,33 @@ class WheelSwitchNode:
 			self.cfs[name].pwm2 = data.pwm2
 		else:
 			self.cfs[name] = CF(data.state,data.pwm1,data.pwm2)
-			rospy.wait_for_service(name + '/update_params')
+			cf_name = name[4:]
+			rospy.wait_for_service(cf_name + '/update_params')
+			print(":SLKJDF:IEJFESIUFHs")
 			rospy.loginfo("found update_params service")
-			self.update_services[name] = rospy.ServiceProxy(name + '/update_params', UpdateParams)
+			self.update_services[name] = rospy.ServiceProxy(cf_name + '/update_params', UpdateParams)
 
 
 	def publish_parameters(self):
 		r = rospy.Rate(3)
 
 		while not rospy.is_shutdown():
-			if self.cfs:
+			if self.cfs and self.update_services:
 				cfs = copy.copy(self.cfs)
 				for name in cfs:
 					cf = cfs[name] 
-					rospy.set_param(name + '/wheels/state', cf.state)
-					rospy.set_param(name + '/wheels/pwm_1', cf.pwm1)
-					rospy.set_param(name + '/wheels/pwm_2', cf.pwm2)
+					cf_name = name[4:]
+					rospy.set_param(cf_name + '/wheels/state', cf.state)
+					rospy.set_param(cf_name + '/wheels/pwm_1', cf.pwm1)
+					rospy.set_param(cf_name + '/wheels/pwm_2', cf.pwm2)
 					try:
 						print "sending commands to " + name + ": " + str(cf.state) + " " + str(cf.pwm1) + " " + str(cf.pwm2)
 						self.update_services[name](["wheels/state"])
+						#rospy.sleep(0.01)
 						self.update_services[name](["wheels/pwm_1"])
+						#rospy.sleep(0.01)
 						self.update_services[name](["wheels/pwm_2"])
-						rospy.sleep(0.05)
+						rospy.sleep(0.07)
 					except rospy.ServiceException as exc:
 						print("Service did not process request: " + str(exc))
 				r.sleep()

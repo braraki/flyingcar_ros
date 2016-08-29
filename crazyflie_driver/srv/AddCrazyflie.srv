@@ -1,4 +1,5 @@
 string uri
+string channel
 string tf_prefix
 float32 roll_trim
 float32 pitch_trim

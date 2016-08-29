@@ -16,16 +16,17 @@ import time
 
 class wheel_controller:
 
-	def __init__(self, cf_num, name):
+	def __init__(self, cf_num, name,channel):
 		#rospy.wait_for_service('update_params')
 		#rospy.loginfo("found update_params service")
 		#self._update_params = rospy.ServiceProxy('update_params', UpdateParams)
-		self.param_pub = rospy.Publisher('/update_params', WheelParams, queue_size=10)
+		self.param_pub = rospy.Publisher('/c' + channel + '/update_params', WheelParams, queue_size=10)
 
 		rospy.set_param('in_air', False)
 
 		self.cf_num = cf_num
 		self.name = name
+		self.channel = channel
 
 		self.x = 0
 		self.y = 0
@@ -56,7 +57,7 @@ class wheel_controller:
 		self.theta_heading = 0
 		self.theta_error = 0
 
-		self.theta_offset_constant = 2.0
+		self.theta_offset_constant = 2.5
 		self.speed_offset_constant = 10
 
 		# margin of error
@@ -95,7 +96,7 @@ class wheel_controller:
 			if self.theta < -math.pi:
 				self.theta = self.theta + 2*math.pi
 
-			print "yaw: " + str(180*self.theta/math.pi)
+			#print "yaw: " + str(180*self.theta/math.pi)
 
 			self.vel_x = data.twist.twist.linear.x
 			self.vel_y = data.twist.twist.linear.y
@@ -112,7 +113,7 @@ class wheel_controller:
 		while not rospy.is_shutdown():	#NTS if goals and positions/angles change while running, this could affect calculation? Add a lock to be safe?
 			# print "entering commander!"	# NTS A lock might also mess up the subscribers because of lag?
 			# calculate baseline
-			self.baseline = (self.goal_speed + 0.0092033)/0.001
+			self.baseline = (self.goal_speed + 0.0092033)/0.0008
 			self.baseline = min(255, self.baseline)
 			self.baseline = max(0, self.baseline)
 			self.baseline = int(self.baseline)
@@ -159,7 +160,7 @@ class wheel_controller:
 
 			# print max(0,min(self.baseline + self.theta_offset + self.speed_offset, 255)), max(0,min(self.baseline - self.theta_offset + self.speed_offset, 255))
 			wheel_params = WheelParams()
-			wheel_params.tf_prefix = self.name
+			wheel_params.tf_prefix = 'c' + self.channel + '/' + self.name
 			if not rospy.get_param('in_air'):
 				if self.check_goal():
 					state = 0
@@ -209,5 +210,6 @@ if __name__ == '__main__':
 	rospy.init_node('wheel_control')
 	cf_num = sys.argv[1]
 	name = sys.argv[2]
-	wheel_ctrl = wheel_controller(cf_num,name)
+	channel = sys.argv[3]
+	wheel_ctrl = wheel_controller(cf_num,name,channel)
 	rospy.spin()

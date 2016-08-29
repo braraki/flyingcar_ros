@@ -4,16 +4,18 @@
   <arg name="name" />
   <arg name="number" default="1" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
   <arg name="cf_num" default="0" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
-  <arg name="frame" default="$(arg name)/base_link" />
   <arg name="joy_dev" default="/dev/input/js0" />
+  <arg name="channel" default="80" />
+  <arg name="frame" default="$(arg channel)/$(arg name)/base_link" />
 
-  <group ns="$(arg name)">
+
+  <group ns="c$(arg channel)/$(arg name)">
     <!-- Converts mocap Robot_X/pose into PoseWithCovarianceStamped to use with localization; Converts localization output into PoseStamped -->
 <!--     <node name="pose_converter" type="pose_converter.py" pkg="crazyflie_tools" args="$(arg name) $(arg number)" output="screen">
     </node> -->
 
     <!-- Localization node -->
-    <node name="localization" pkg="crazyflie_teleop" type="localization.py" args="$(arg name) $(arg number)" output="screen">
+    <node name="localization" pkg="crazyflie_teleop" type="localization.py" args="$(arg name) $(arg number) $(arg channel)" output="screen">
     </node>
 <!--     <include file="$(find crazyflie_teleop)/launch/localization.launch">
       <arg name="name" value="$(arg name)"/>
@@ -22,6 +24,7 @@
     <!-- Adds a Crazyflie to server -->
     <include file="$(find crazyflie_driver)/launch/crazyflie_add.launch">
       <arg name="name" value="$(arg name)" />
+      <arg name="channel" value="$(arg channel)" />
       <arg name="enable_logging" value="True" />
     </include>
 
@@ -40,7 +43,7 @@
     </node>
 
     <!-- Starts wheel controller -->
-    <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number) $(arg name)">
+    <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number) $(arg name) $(arg channel)">
     </node>
 
     <!-- Starts flight controller -->
