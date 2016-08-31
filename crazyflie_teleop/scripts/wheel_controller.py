@@ -16,16 +16,17 @@ import time
 
 class wheel_controller:
 
-	def __init__(self, cf_num, name):
+	def __init__(self, cf_num, name, radio_id):
 		#rospy.wait_for_service('update_params')
 		#rospy.loginfo("found update_params service")
 		#self._update_params = rospy.ServiceProxy('update_params', UpdateParams)
-		self.param_pub = rospy.Publisher('/update_params', WheelParams, queue_size=10)
+		self.param_pub = rospy.Publisher('/id' + str(radio_id) + '/update_params', WheelParams, queue_size=10)
 
 		rospy.set_param('in_air', False)
 
 		self.cf_num = cf_num
 		self.name = name
+		self.radio_id = radio_id
 
 		self.x = 0
 		self.y = 0
@@ -95,7 +96,7 @@ class wheel_controller:
 			if self.theta < -math.pi:
 				self.theta = self.theta + 2*math.pi
 
-			print "yaw: " + str(180*self.theta/math.pi)
+			#print "yaw: " + str(180*self.theta/math.pi)
 
 			self.vel_x = data.twist.twist.linear.x
 			self.vel_y = data.twist.twist.linear.y
@@ -209,5 +210,6 @@ if __name__ == '__main__':
 	rospy.init_node('wheel_control')
 	cf_num = sys.argv[1]
 	name = sys.argv[2]
-	wheel_ctrl = wheel_controller(cf_num,name)
+	radio_id = sys.argv[3]
+	wheel_ctrl = wheel_controller(cf_num,name,radio_id)
 	rospy.spin()

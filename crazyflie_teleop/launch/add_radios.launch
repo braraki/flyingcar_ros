@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <include file="$(find crazyflie_teleop)/launch/add_auto_new_radio.launch">
+    <arg name="name" value="doc"/>
+    <arg name="number" value="4" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+    <arg name="cf_num" value="2" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+    <arg name="frame" value="doc/base_link" />
+    <arg name="joy_dev" value="/dev/input/js0" />
+    <arg name="radio_id" value="1" />
+  </include>
+
+  <include file="$(find crazyflie_teleop)/launch/add_auto_new_radio.launch">
+    <arg name="name" value="gio"/>
+    <arg name="number" value="6" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+    <arg name="cf_num" value="4" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+    <arg name="frame" value="gio/base_link" />
+    <arg name="joy_dev" value="/dev/input/js0" />
+    <arg name="radio_id" value="2" />
+  </include>
+
+  <include file="$(find crazyflie_teleop)/launch/add_auto_new_radio.launch">
+    <arg name="name" value="igo"/>
+    <arg name="number" value="8" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+    <arg name="cf_num" value="6" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+    <arg name="frame" value="igo/base_link" />
+    <arg name="joy_dev" value="/dev/input/js0" />
+    <arg name="radio_id" value="3" />
+  </include>
+
+</launch>

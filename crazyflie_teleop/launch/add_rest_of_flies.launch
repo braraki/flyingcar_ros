@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <include file="$(find crazyflie_teleop)/launch/add_auto.launch">
+	  <arg name="name" value="bug"/>
+  	<arg name="number" value="2" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+    <arg name="cf_num" value="1" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+    <arg name="frame" value="bug/base_link" />
+    <arg name="joy_dev" value="/dev/input/js0" />
+    <arg name="radio_id" value="0" />
+  </include>
+
+  <include file="$(find crazyflie_teleop)/launch/add_auto.launch">
+	  <arg name="name" value="eff"/>
+  	<arg name="number" value="5" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+    <arg name="cf_num" value="3" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+    <arg name="frame" value="eff/base_link" />
+    <arg name="joy_dev" value="/dev/input/js0" />
+    <arg name="radio_id" value="1" />
+  </include>
+  
+  <include file="$(find crazyflie_teleop)/launch/add_auto.launch">
+	  <arg name="name" value="han"/>
+  	<arg name="number" value="7" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+    <arg name="cf_num" value="5" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+    <arg name="frame" value="han/base_link" />
+    <arg name="joy_dev" value="/dev/input/js0" />
+    <arg name="radio_id" value="2" />
+  </include>
+
+  <include file="$(find crazyflie_teleop)/launch/add_auto.launch">
+	  <arg name="name" value="kal"/>
+  	<arg name="number" value="10" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+    <arg name="cf_num" value="7" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
+    <arg name="frame" value="kal/base_link" />
+    <arg name="joy_dev" value="/dev/input/js0" />
+    <arg name="radio_id" value="3" />
+  </include>
+
+</launch>

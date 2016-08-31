@@ -20,7 +20,7 @@ class CF:
 class WheelSwitchNode:
 
 	def __init__(self):
-		rospy.Subscriber("/update_params", WheelParams, self.new_param)
+		rospy.Subscriber("update_params", WheelParams, self.new_param)
 
 		self.cfs = {}
 		self.update_services = {}
@@ -35,9 +35,9 @@ class WheelSwitchNode:
 			self.cfs[name].pwm2 = data.pwm2
 		else:
 			self.cfs[name] = CF(data.state,data.pwm1,data.pwm2)
-			rospy.wait_for_service(name + '/update_params')
+			rospy.wait_for_service('/' + name + '/update_params')
 			rospy.loginfo("found update_params service")
-			self.update_services[name] = rospy.ServiceProxy(name + '/update_params', UpdateParams)
+			self.update_services[name] = rospy.ServiceProxy('/' + name + '/update_params', UpdateParams)
 
 
 	def publish_parameters(self):
@@ -48,9 +48,9 @@ class WheelSwitchNode:
 				cfs = copy.copy(self.cfs)
 				for name in cfs:
 					cf = cfs[name] 
-					rospy.set_param(name + '/wheels/state', cf.state)
-					rospy.set_param(name + '/wheels/pwm_1', cf.pwm1)
-					rospy.set_param(name + '/wheels/pwm_2', cf.pwm2)
+					rospy.set_param('/' + name + '/wheels/state', cf.state)
+					rospy.set_param('/' + name + '/wheels/pwm_1', cf.pwm1)
+					rospy.set_param('/' + name + '/wheels/pwm_2', cf.pwm2)
 					try:
 						print "sending commands to " + name + ": " + str(cf.state) + " " + str(cf.pwm1) + " " + str(cf.pwm2)
 						self.update_services[name](["wheels/state"])

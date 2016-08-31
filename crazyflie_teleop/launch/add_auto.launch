@@ -6,6 +6,7 @@
   <arg name="cf_num" default="0" /> <!-- Links Crazyflie with simulated Crazyflie from planner -->
   <arg name="frame" default="$(arg name)/base_link" />
   <arg name="joy_dev" default="/dev/input/js0" />
+  <arg name="radio_id" default="0" />
 
   <group ns="$(arg name)">
     <!-- Converts mocap Robot_X/pose into PoseWithCovarianceStamped to use with localization; Converts localization output into PoseStamped -->
@@ -40,7 +41,7 @@
     </node>
 
     <!-- Starts wheel controller -->
-    <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number) $(arg name)">
+    <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller.py" output="screen" args="$(arg number) $(arg name) $(arg radio_id)">
     </node>
 
     <!-- Starts flight controller -->
