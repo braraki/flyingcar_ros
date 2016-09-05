@@ -58,7 +58,7 @@ class wheel_controller:
 		self.theta_error = 0
 
 		self.theta_offset_constant = 2.0
-		self.speed_offset_constant = 10
+		self.speed_offset_constant = 0.1
 
 		# margin of error
 		self.pos_error = 0.01
@@ -82,7 +82,10 @@ class wheel_controller:
 
 		#print "goal:" + str(self.goal_x) + " | " + str(self.goal_y)
 
-		self.goal_speed = math.sqrt((self.goal_x-self.x)**2+(self.goal_y-self.y)**2)/float(self.goal_t-time.time())
+		#print "TIMES:"
+		#print self.goal_t, time.time()
+		# had to add a +0.1 to the times because sometimes time.time() overtakes self.goal_t, prbly because of delays
+		self.goal_speed = math.sqrt((self.goal_x-self.x)**2+(self.goal_y-self.y)**2)/float(self.goal_t-time.time()+0.1)
 
 		#print self.goal_speed
 		#print float(self.goal_t-rospy.Time.now().nsecs)
@@ -191,7 +194,10 @@ class wheel_controller:
 						pwm1 = pwm_right
 						pwm2 = pwm_left
 						#print "parameters updated!"
+						#print "speed: " + str(self.speed) + " | goal speed: " + str(self.goal_speed)
+						#print "offsets:"
 						#print self.theta_offset, self.speed_offset, self.baseline
+						#print "PWMS:"
 						#print pwm_left, pwm_right
 			else:
 				state = 0

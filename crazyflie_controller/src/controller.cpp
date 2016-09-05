@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <std_srvs/Empty.h>
+#include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
 
 //#include <crazyflie_teleop/PoseStampedWithTime.h> 
@@ -67,7 +68,9 @@ public:
             "yaw")
         , m_state(Idle)
         , m_goal()
+        , m_vel()
         , m_subscribeGoal()
+        , m_pos_sub()
         , m_serviceTakeoff()
         , m_serviceLand()
         , m_thrust(0)
@@ -76,6 +79,7 @@ public:
         ros::NodeHandle nh;
         m_pubNav = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
         m_subscribeGoal = nh.subscribe("flight_goal", 1, &Controller::goalChanged, this); //NTS: changed from goal to flight_goal
+        m_pos_sub = nh.subscribe("pose_localization", 10, &Controller::read_velocity, this);
         m_serviceTakeoff = nh.advertiseService("takeoff", &Controller::takeoff, this);
         m_serviceLand = nh.advertiseService("land", &Controller::land, this);
     }
@@ -92,6 +96,11 @@ private:
         const geometry_msgs::PoseStamped::ConstPtr& msg)
     {
         m_goal = *msg;
+    }
+
+    void read_velocity(const nav_msgs::Odometry::ConstPtr& msg)
+    {
+        m_vel = *msg;
     }
 
     bool takeoff(
@@ -202,10 +211,10 @@ private:
                     )).getRPY(roll, pitch, yaw);
 
                 geometry_msgs::Twist msg;
-                msg.linear.x = m_pidX.update(0, targetDrone.pose.position.x);
-                msg.linear.y = m_pidY.update(0.0, targetDrone.pose.position.y);
-                msg.linear.z = m_pidZ.update(0.0, targetDrone.pose.position.z);
-                msg.angular.z = m_pidYaw.update(0.0, yaw);
+                msg.linear.x = m_pidX.update(0, targetDrone.pose.position.x, m_vel.twist.twist.linear.x);
+                msg.linear.y = m_pidY.update(0.0, targetDrone.pose.position.y, m_vel.twist.twist.linear.y);
+                msg.linear.z = m_pidZ.update(0.0, targetDrone.pose.position.z, m_vel.twist.twist.linear.z);
+                msg.angular.z = m_pidYaw.update(0.0, yaw, m_vel.twist.twist.angular.z);
                 m_pubNav.publish(msg);
 
 
@@ -241,7 +250,9 @@ private:
     PID m_pidYaw;
     State m_state;
     geometry_msgs::PoseStamped m_goal;
+    nav_msgs::Odometry m_vel;
     ros::Subscriber m_subscribeGoal;
+    ros::Subscriber m_pos_sub;
     ros::ServiceServer m_serviceTakeoff;
     ros::ServiceServer m_serviceLand;
     float m_thrust;

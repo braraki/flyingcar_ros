@@ -13,6 +13,8 @@ import tf
 import sys 
 import threading
 import time
+import math
+import enum
 
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import PoseWithCovarianceStamped
@@ -39,6 +41,7 @@ class MakePath:
 		self.nodes_map = nodes_map
 		self.cf_num = cf_num
 		self.path = []
+		self.trajectory = []
 		print "Initialized..."
 
 	def _convert_path(self,data):
@@ -49,6 +52,44 @@ class MakePath:
 			for i in range(len(nodes)):
 				path.append((self.nodes_map[nodes[i]][0],times[i],self.nodes_map[nodes[i]][1])) #gets waypoint coordinates + time + waypoint type		
 			self.path = path
+			self.trajectory = self._generate_trajectory(path)
+
+	def _generate_trajectory(self, path):
+		traj = []
+		x = []
+		y = []
+		z = []
+		t = []
+		for i, node in enumerate(path):
+			x.append(node[0][0])
+			y.append(node[0][1])
+			z.append(node[0][2])
+			t.append(node[1])
+			if i == 0:
+				traj.append(((x[i],y[i],z[i]),t[i],node[2]))
+
+			if i > 0:
+				vel = []
+				dist = math.sqrt((x[i]-x[i-1])**2 + (y[i]-y[i-1])**2 + (z[i]-z[i-1])**2)
+				vector = ((x[i]-x[i-1])/dist, (y[i]-y[i-1])/dist, (z[i]-z[i-1])/dist)
+				time = t[i] - t[i-1]
+				vel.append((x[i]-x[i-1])/time)
+				vel.append((y[i]-y[i-1])/time)
+				vel.append((z[i]-z[i-1])/time)
+
+				# make traj points every 0.1 seconds along the path
+				#print "HALLO"
+				#print time
+				#print range(1,int(10*time))
+				for k in range(1,int(10*time)):
+					traj_point = (x[i-1] + (0.1*k)*vel[0],y[i-1] + (0.1*k)*vel[1],z[i-1] + (0.1*k)*vel[2])
+					traj.append((traj_point,t[i-1]+0.1*k,node[2]))
+				traj.append(((x[i],y[i],z[i]),t[i],node[2]))
+		#times = []
+		#for node in traj:
+		#	times.append(node[1])
+		#print times
+		return traj
 
 class WaypointNode:
 
@@ -167,12 +208,12 @@ class WaypointNode:
 		mkpath = MakePath(self.node_map,self.cf_num)
 		r = rospy.Rate(1)
 		while not rospy.is_shutdown():
-			path = mkpath.path
+			path = mkpath.trajectory
 			if not path == self.cf_path:
 				print "updating path"
 				self.goal_lock.acquire()
 
-				self.cf_path = mkpath.path
+				self.cf_path = mkpath.trajectory
 				self.goal_index = 0
 				
 				self.goal_lock.release()
@@ -190,8 +231,8 @@ class WaypointNode:
 				self.goal_t = new_goal[1]
 				self.goal_type = new_goal[2]
 
-				if self.goal_index < len(self.cf_path) - 1:
-					next_goal = self.cf_path[self.goal_index + 2]
+				if self.goal_index < len(self.cf_path) - 5:
+					next_goal = self.cf_path[self.goal_index + 5]
 					if not map_helper.is_air(next_goal[2]):
 						self.next_goal_x = next_goal[0][0]
 						self.next_goal_y = next_goal[0][1]

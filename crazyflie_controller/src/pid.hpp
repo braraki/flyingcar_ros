@@ -44,7 +44,7 @@ public:
         return m_ki;
     }
 
-    float update(float value, float targetValue)
+    float update(float value, float targetValue, float vel)
     {
         ros::Time time = ros::Time::now();
         float dt = time.toSec() - m_previousTime.toSec();
@@ -55,7 +55,8 @@ public:
         float d = 0;
         if (dt > 0)
         {
-            d = m_kd * (error - m_previousError) / dt;
+            d = m_kd * (0 - vel);
+            //d = m_kd * (error - m_previousError) / dt;
         }
         float i = m_ki * m_integral;
         float output = p + d + i;
