@@ -4,11 +4,18 @@
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
 
+#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Quaternion.h"
+#include "tf/transform_datatypes.h"
+//#include "LinearMath/btMatrix3x3.h"
+
 //#include <crazyflie_teleop/PoseStampedWithTime.h> 
 //NTS: added
 
 
 #include "pid.hpp"
+
+#define PI 3.14159
 
 double get(
     const ros::NodeHandle& n,
@@ -101,6 +108,18 @@ private:
     void read_velocity(const nav_msgs::Odometry::ConstPtr& msg)
     {
         m_vel = *msg;
+
+        // tf::Quaternion quat;
+        // tf::quaternionMsgToTF(msg.pose.pose.orientation, quat);
+
+        // double roll, pitch, yaw;
+        // tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+        // yaw = yaw - PI/2.0;
+
+        // float q = (msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z,msg.pose.pose.orientation.w)
+        // self.theta = tf.transformations.euler_from_quaternion(q)[2] - math.pi/2.0
+        // if self.theta < -math.pi:
+        //     self.theta = self.theta + 2*math.pi
     }
 
     bool takeoff(
@@ -210,11 +229,16 @@ private:
                         targetDrone.pose.orientation.w
                     )).getRPY(roll, pitch, yaw);
 
+                float YawLin = atan2(sin(0 - yaw),cos(0 - yaw));
+                float yawspeed = 3.0 * YawLin;
+
+                //ROS_INFO("yaw: %f", yaw);
+
                 geometry_msgs::Twist msg;
                 msg.linear.x = m_pidX.update(0, targetDrone.pose.position.x, m_vel.twist.twist.linear.x);
                 msg.linear.y = m_pidY.update(0.0, targetDrone.pose.position.y, m_vel.twist.twist.linear.y);
                 msg.linear.z = m_pidZ.update(0.0, targetDrone.pose.position.z, m_vel.twist.twist.linear.z);
-                msg.angular.z = m_pidYaw.update(0.0, yaw, m_vel.twist.twist.angular.z);
+                msg.angular.z = yawspeed;//m_pidYaw.update(0.0, yaw, m_vel.twist.twist.angular.z);
                 m_pubNav.publish(msg);
 
 
