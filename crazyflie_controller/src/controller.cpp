@@ -229,7 +229,7 @@ private:
                         targetDrone.pose.orientation.w
                     )).getRPY(roll, pitch, yaw);
 
-                float YawLin = atan2(sin(0 - yaw),cos(0 - yaw));
+                float YawLin = atan2(sin(0.0 - yaw),cos(0.0 - yaw));
                 float yawspeed = 3.0 * YawLin;
 
                 //ROS_INFO("yaw: %f", yaw);
