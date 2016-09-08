@@ -223,16 +223,32 @@ private:
                 tfScalar roll, pitch, yaw;
                 tf::Matrix3x3(
                     tf::Quaternion(
-                        targetDrone.pose.orientation.x,
-                        targetDrone.pose.orientation.y,
-                        targetDrone.pose.orientation.z,
-                        targetDrone.pose.orientation.w
+                        m_vel.pose.pose.orientation.x,
+                        m_vel.pose.pose.orientation.y,
+                        m_vel.pose.pose.orientation.z,
+                        m_vel.pose.pose.orientation.w
                     )).getRPY(roll, pitch, yaw);
 
-                float YawLin = atan2(sin(0.0 - yaw),cos(0.0 - yaw));
-                float yawspeed = 3.0 * YawLin;
+                yaw = yaw - 3.14159/2;
+                if(yaw < - 3.14159){
+                    yaw = yaw + 2*3.14159;
+                }
 
-                //ROS_INFO("yaw: %f", yaw);
+                // tfScalar roll, pitch, yaw;
+                // tf::Matrix3x3(
+                //     tf::Quaternion(
+                //         targetDrone.pose.orientation.x,
+                //         targetDrone.pose.orientation.y,
+                //         targetDrone.pose.orientation.z,
+                //         targetDrone.pose.orientation.w
+                //     )).getRPY(roll, pitch, yaw);
+
+                float YawLin = atan2(sin(0.0 - yaw),cos(0.0 - yaw));
+                float yawspeed = std::max(std::min(-100.0 * YawLin, 200.0), -200.0);
+
+
+
+                ROS_INFO("yaw: %f | yawspeed: %f", yaw, yawspeed);
 
                 geometry_msgs::Twist msg;
                 msg.linear.x = m_pidX.update(0, targetDrone.pose.position.x, m_vel.twist.twist.linear.x);
