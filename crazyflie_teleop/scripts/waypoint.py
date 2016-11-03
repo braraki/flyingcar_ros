@@ -71,7 +71,10 @@ class MakePath:
 			if i > 0:
 				vel = []
 				dist = math.sqrt((x[i]-x[i-1])**2 + (y[i]-y[i-1])**2 + (z[i]-z[i-1])**2)
-				vector = ((x[i]-x[i-1])/dist, (y[i]-y[i-1])/dist, (z[i]-z[i-1])/dist)
+				if dist > 0:
+					vector = ((x[i]-x[i-1])/dist, (y[i]-y[i-1])/dist, (z[i]-z[i-1])/dist)
+				else:
+					vector = (0.0, 0.0, 0.0)
 				time = t[i] - t[i-1]
 				vel.append((x[i]-x[i-1])/time)
 				vel.append((y[i]-y[i-1])/time)

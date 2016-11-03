@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="name" default="ace" />
+  <arg name="radio_id" default="0" />
+  <arg name="number" default="1" /> <!-- Links Crazyflie with Robot_X streamed from mocap-->
+  <arg name="cf_num" default="0" />
+
+  <!-- Starts Crazyflie Server -->
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
+
+  <group ns="$(arg name)">
+
+
+    <!-- Adds a Crazyflie to server -->
+    <include file="$(find crazyflie_driver)/launch/crazyflie_add.launch">
+      <arg name="name" value="$(arg name)" />
+      <arg name="enable_logging" value="True" />
+    </include>
+
+    <node name="wheel_control" pkg="crazyflie_teleop" type="wheel_controller_power.py" output="screen" args="$(arg number) $(arg name) $(arg radio_id)">
+    </node>
+
+  </group>
+
+  <group ns="id$(arg radio_id)">
+    <node name="wheel_switch_node" pkg="crazyflie_teleop" type="wheel_switch_node.py" output="screen" />
+  </group>
+
+</launch>

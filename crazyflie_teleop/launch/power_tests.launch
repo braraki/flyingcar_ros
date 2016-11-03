@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="name" default="cap" />
+
+  <!-- Starts Crazyflie Server -->
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
+
+  <group ns="$(arg name)">
+
+
+    <!-- Adds a Crazyflie to server -->
+    <include file="$(find crazyflie_driver)/launch/crazyflie_add.launch">
+      <arg name="name" value="$(arg name)" />
+      <arg name="enable_logging" value="True" />
+    </include>
+
+  </group>
+
+ <node name="bag_relay" pkg="crazyflie_controller" type="bag_relay" output="screen"/>
+
+</launch>

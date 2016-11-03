@@ -229,9 +229,9 @@ private:
                         m_vel.pose.pose.orientation.w
                     )).getRPY(roll, pitch, yaw);
 
-                yaw = yaw - 3.14159/2;
+                yaw = yaw - 3.14159/2.0;
                 if(yaw < - 3.14159){
-                    yaw = yaw + 2*3.14159;
+                    yaw = yaw + 2.0*3.14159;
                 }
 
                 // tfScalar roll, pitch, yaw;
@@ -244,7 +244,7 @@ private:
                 //     )).getRPY(roll, pitch, yaw);
 
                 float YawLin = atan2(sin(0.0 - yaw),cos(0.0 - yaw));
-                float yawspeed = std::max(std::min(-100.0 * YawLin, 200.0), -200.0);
+                float yawspeed = std::max(std::min(-150.0 * YawLin, 200.0), -200.0);
 
 
 

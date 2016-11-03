@@ -3,11 +3,20 @@
 import rospy
 import math
 
+from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
+from crazyflie_teleop.msg import DriveCmd
+from crazyflie_teleop.msg import WheelParams
+
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Pose2D
 from geometry_msgs.msg import Vector3
 
-import threading 
+import sys
+import tf
+import threading
+import time
 
 from crazyflie_driver.srv import UpdateParams
 from std_srvs.srv import Empty
@@ -50,34 +59,38 @@ class CrawlerController:
 
 		print "starting up!"
 
+		rospy.Subscriber("pose_localization", Odometry, self._get_pos)
+
 		self.pub_cmd = rospy.Publisher("/lam/cmd_vel",Twist,queue_size=10)
 
 		self.update = True
 
-		pos_thread	= threading.Thread(target=self._sub_pos)
 		cmd_thread  = threading.Thread(target=self.publish_cmd_vel)
 		ctrl_thread = threading.Thread(target=self.controller)
 
-		pos_thread.daemon = True
 		cmd_thread.daemon = True
 		ctrl_thread.daemon = True
 
-		pos_thread.start()
 		cmd_thread.start()
 		ctrl_thread.start()
 
-
-	def _sub_pos(self):
-		rospy.Subscriber("/Robot_2/ground_pose",Pose2D,self._get_pos)
-		return
-
-
 	def _get_pos(self,data):
-		self.x = data.x
-		self.y = data.y
-		self.phi = data.theta#-math.pi/2
+		self.x = data.pose.pose.position.x
+		self.y = data.pose.pose.position.y
+		q = (data.pose.pose.orientation.x,data.pose.pose.orientation.y,data.pose.pose.orientation.z,data.pose.pose.orientation.w)
+		self.phi = tf.transformations.euler_from_quaternion(q)[2] - math.pi/2.0
+		if self.phi < -math.pi:
+			self.phi = self.phi + 2*math.pi
+
+		#print "yaw: " + str(180*self.theta/math.pi)
+
+		#self.vel_x = data.twist.twist.linear.x
+		#self.vel_y = data.twist.twist.linear.y
+
 
 	def controller(self):
+		r = rospy.Rate(30)
+
 		while not rospy.is_shutdown():
 
 			e_x = self.x - self.d_x
@@ -126,7 +139,7 @@ class CrawlerController:
 			self.msg.linear.z = thrust
 			self.msg.angular.z = yaw
 
-			rospy.Rate(1)
+			r.sleep()
 		return
 
 
@@ -165,17 +178,14 @@ class CrawlerController:
 
 		
 	def publish_cmd_vel(self):
+		r = rospy.Rate(3)
 		while not rospy.is_shutdown():
 			#print "published cmd vel!"
 			self.pub_cmd.publish(self.msg)
-			rospy.Rate(1)
+			r.sleep()
 		return
 
 if __name__ == "__main__":
 	rospy.init_node("crawler",anonymous=True)
 	ctrl = CrawlerController()
 	rospy.spin()
-
-
-
-

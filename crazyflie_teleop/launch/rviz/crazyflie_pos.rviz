@@ -19,6 +19,11 @@ Panels:
         - /RobotModel8
         - /Path12
         - /Pose3
+        - /Path13
+        - /Pose4
+        - /Path14
+        - /Pose5
+        - /RobotModel9
       Splitter Ratio: 0.617241
     Tree Height: 689
   - Class: rviz/Selection
@@ -439,6 +444,83 @@ Visualization Manager:
       Shape: Arrow
       Topic: /ace/flight_goal
       Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 85; 255
+      Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic: /doc/d_path
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.1
+      Head Radius: 0.03
+      Name: Pose
+      Shaft Length: 0.2
+      Shaft Radius: 0.02
+      Shape: Arrow
+      Topic: /doc/flight_goal
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic: /lam/path
+      Value: true
+    - Alpha: 0.5
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.05
+      Head Radius: 0.03
+      Name: Pose
+      Shaft Length: 0.1
+      Shaft Radius: 0.02
+      Shape: Arrow
+      Topic: /lam/pose
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: lam
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -463,22 +545,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.62939
+      Distance: 1.08586
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.292539
-        Y: 0.21195
-        Z: -0.325821
+        X: 0.151146
+        Y: -0.173935
+        Z: -0.0729338
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.965398
+      Pitch: 0.905398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.13041
+      Yaw: 2.37541
     Saved: ~
 Window Geometry:
   Displays:
@@ -496,5 +578,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1474
-  X: 351
+  X: 311
   Y: 14
